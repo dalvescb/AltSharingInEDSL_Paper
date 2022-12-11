@@ -1,0 +1,9 @@
+.stack-work
+.direnv
+*.aux
+*.blg
+*.bbl
+*.fbd_latexmk
+*.fls
+*.log
+*.synctex.gz
