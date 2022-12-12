@@ -6,7 +6,7 @@
 
 let
 in nixpkgs.haskell.lib.buildStackProject {
-  name = "zMASS";
+  name = "AltSharing";
   nativeBuildInputs = [ nixpkgs.pkg-config ];
   buildInputs = [
       nixpkgs.haskell.compiler.ghc924
@@ -19,6 +19,8 @@ in nixpkgs.haskell.lib.buildStackProject {
 		  nixpkgs.haskellPackages.hoogle
 		  nixpkgs.haskellPackages.zlib
 		  nixpkgs.haskellPackages.hlint
+      nixpkgs.haskellPackages.mtl
+      nixpkgs.haskellPackages.fgl
 		  (nixpkgs.haskell-language-server.override { supportedGhcVersions = [ "924" ]; })
 		  nixpkgs.gnumake
 		  nixpkgs.coreutils

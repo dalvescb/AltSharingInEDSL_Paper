@@ -52,40 +52,37 @@ TODO The abstract should briefly summarize the contents of the paper in
 %
 \section{Introduction}
 
-\section{Examples TODO REMOVE ME}
-example citiation \cite{kiselyov:sharing}
-\begin{table}
-\caption{Table captions should be placed above the
-tables.}\label{tab1}
-\begin{tabular}{|l|l|l|}
-\hline
-Heading level &  Example & Font size and style\\
-\hline
-Title (centered) &  {\Large\bfseries Lecture Notes} & 14 point, bold\\
-1st-level heading &  {\large\bfseries 1 Introduction} & 12 point, bold\\
-2nd-level heading & {\bfseries 2.1 Printing Area} & 10 point, bold\\
-3rd-level heading & {\bfseries Run-in Heading in Bold.} Text follows & 10 point, bold\\
-4th-level heading & {\itshape Lowest Level Heading.} Text follows & 10 point, italic\\
-\hline
-\end{tabular}
-\end{table}
+TODO describe sharing problem (mention observable sharing
+\cite{gill:observablesharing} and implicit/explicit sharing
+\cite{kiselyov:sharing} papers)
+
+TODO describe finally tagless \cite{carette:finallytagless}
 
 
-\noindent Displayed equations are centered and set on a separate
-line.
-\begin{equation}
-x + y = z
-\end{equation}
-Please try to avoid rasterized images for line-art diagrams and
-schemas. Whenever possible, use vector graphics instead (see
-Fig.~\ref{fig1}).
+TODO overview of our method
 
-\begin{figure}
-\includegraphics[width=\textwidth]{fig1.eps}
-\caption{A figure caption is always placed below the illustration.
-Please note that short captions are centered, while long ones are
-justified by the macro package automatically.} \label{fig1}
-\end{figure}
+\section{Detecting Sharing In Finally Tagless DSLs}
+TODO
+
+\section{Implicit Sharing Via Hash-Consing}
+TODO
+cite Ershov’s original description of hash-consing \cite{ershov1958:consing}
+cite Type safe consing implementation (with performance benchamrks) \cite{filliatre:typesafeconsing}
+
+\section{Limitations of Hash-Consing}
+
+TODO add-chains example
+
+\subsection{Explicit Sharing and Limitations}
+TODO
+
+\section{Implicit Sharing Via ByteString ASTs}
+TODO
+
+\subsection{Memory Limitations}
+TODO
+\section{Explicit Sharing Of ByteString ASTs}
+TODO
 
 \subsubsection{Acknowledgements} Please place your acknowledgments at
 the end of the paper, preceded by an unnumbered run-in heading (i.e.

@@ -13,9 +13,6 @@
     "llncs10"
     "fontenc"
     "graphicx")
-   (LaTeX-add-labels
-    "tab1"
-    "fig1")
    (LaTeX-add-bibliographies
     "references"))
  :latex)
