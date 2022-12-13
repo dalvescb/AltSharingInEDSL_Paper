@@ -10,6 +10,7 @@
 % Other font encondings may result in incorrect characters.
 %
 \usepackage{graphicx}
+\usepackage{listings}
 % Used for displaying a sample figure. If possible, figure files should
 % be included in EPS format.
 %
@@ -19,6 +20,7 @@
 %\renewcommand\UrlFont{\color{blue}\rmfamily}
 %
 \begin{document}
+\lstset{language=haskell}
 %
 \title{Alternative Methods for Implementing
     Explicit and Finding Implicit Sharing in embedded DSLs}
@@ -58,18 +60,41 @@ TODO describe sharing problem (mention observable sharing
 
 TODO describe finally tagless \cite{carette:finallytagless}
 
+We present methods for implementing embedded DSLs with sharing that are both
+safe and maintain all the benefits of being embedded in the Haskell ecosystem.
+This means DSL functions are type-safe, do not require the use of unsafe
+referencing (i.e., via unsafePerformIO) and can return Haskell's container
+types (i.e., tuples, lists, etc) without breaking sharing.
 
-TODO overview of our method
+\section{Detecting Sharing}
 
-\section{Detecting Sharing In Finally Tagless DSLs}
-TODO
+A naive DSL implementation of an expression in Haskell can be done via standard
+Haskell data types, for example:
 
-\section{Implicit Sharing Via Hash-Consing}
+\begin{lstlisting}
+data Exp
+  = Add Exp Exp
+  | Variable String
+  | Constant Int
+
+-- Example
+v0 = Variable ``v0''
+exp0 = Add v0 (Constant 0)
+exp1 = Add exp0 exp0
+\end{lstlisting}
+
+Note the DSL generates a tree, or to be more specific an Abstract Syntax Tree
+(AST).
+
+\subsection{Detecting Sharing In Finally Tagless DSLs}
+
+
+\subsection{Implicit Sharing Via Hash-Consing}
 TODO
 cite Ershov’s original description of hash-consing \cite{ershov1958:consing}
-cite Type safe consing implementation (with performance benchamrks) \cite{filliatre:typesafeconsing}
+cite Type safe consing implementation (with performance benchmarks) \cite{filliatre:typesafeconsing}
 
-\section{Limitations of Hash-Consing}
+\subsection{Limitations of Hash-Consing}
 
 TODO add-chains example
 
@@ -88,36 +113,14 @@ TODO
 the end of the paper, preceded by an unnumbered run-in heading (i.e.
 3rd-level heading).
 
-\bibliographystyle{splncs04}
-\bibliography{references}
 %
 % ---- Bibliography ----
 %
 % BibTeX users should specify bibliography style 'splncs04'.
 % References will then be sorted and formatted in the correct style.
-%
-% \bibliographystyle{splncs04}
-% \bibliography{mybibliography}
-%
-% \begin{thebibliography}{8}
-% \bibitem{ref_article1}
-% Author, F.: Article title. Journal \textbf{2}(5), 99--110 (2016)
+\bibliographystyle{splncs04}
+\bibliography{references}
 
-% \bibitem{ref_lncs1}
-% Author, F., Author, S.: Title of a proceedings paper. In: Editor,
-% F., Editor, S. (eds.) CONFERENCE 2016, LNCS, vol. 9999, pp. 1--13.
-% Springer, Heidelberg (2016). \doi{10.10007/1234567890}
-
-% \bibitem{ref_book1}
-% Author, F., Author, S., Author, T.: Book title. 2nd edn. Publisher,
-% Location (1999)
-
-% \bibitem{ref_proc1}
-% Author, A.-B.: Contribution title. In: 9th International Proceedings
-% on Proceedings, pp. 1--2. Publisher, Location (2010)
-
-% \bibitem{ref_url1}
-% LNCS Homepage, \url{http://www.springer.com/lncs}. Last accessed 4
-% Oct 2017
-% \end{thebibliography}
 \end{document}
+
+% LocalWords:  DSLs unsafePerformIO Haskell's

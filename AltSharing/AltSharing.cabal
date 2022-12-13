@@ -35,6 +35,7 @@ library
       base >=4.7 && <5
     , fgl
     , mtl
+    , unordered-containers
   default-language: Haskell2010
 
 executable AltSharing-exe
@@ -49,6 +50,7 @@ executable AltSharing-exe
     , base >=4.7 && <5
     , fgl
     , mtl
+    , unordered-containers
   default-language: Haskell2010
 
 test-suite AltSharing-test
@@ -64,4 +66,5 @@ test-suite AltSharing-test
     , base >=4.7 && <5
     , fgl
     , mtl
+    , unordered-containers
   default-language: Haskell2010

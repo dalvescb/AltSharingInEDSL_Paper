@@ -12,7 +12,8 @@
     "llncs"
     "llncs10"
     "fontenc"
-    "graphicx")
+    "graphicx"
+    "listings")
    (LaTeX-add-bibliographies
     "references"))
  :latex)
