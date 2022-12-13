@@ -40,3 +40,7 @@ data GData = GData { gGraph :: Gr OpLabel ()
                    }
 
 newtype Graph a = Graph { unGraph :: State GData NodeID }
+
+
+-- instance CoreISA Graph where
+--   toGPR x = 
