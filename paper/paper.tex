@@ -115,7 +115,7 @@ class Exp repr where
 We can then create different instances to implement different functionality.
 For example, we can generate the AST from the previous DSL like so
 \begin{minted}{haskell}
-data ExpR a = ExpR { unExpR :: Exp }
+newtype ExpR a = ExpR { unExpR :: Exp }
 
 instance Exp ExpR where
   constant = ExpR . Constant
@@ -135,7 +135,7 @@ instance Exp Pretty where
 
 And use the same DSL code to run either implementation
 \begin{minted}{haskell}
-exp :: repr Int -> repr Int
+exp :: Exp repr => repr Int -> repr Int
 exp v0 =
   let
     exp0 = add v0 (constant 0)
@@ -165,10 +165,10 @@ data Node = NAdd NodeID NodeID
 
 
 data BiMap a -- abstract
-lookup_key : Ord a => a -> BiMap a -> Maybe Int
-lookup_val : Int -> BiMap a -> a
-insert : Ord a => a -> BiMap a -> (Int,BiMap a)
-empty : BiMap a
+lookup_key :: Ord a => a -> BiMap a -> Maybe Int
+lookup_val :: Int -> BiMap a -> a
+insert :: Ord a => a -> BiMap a -> (Int,BiMap a)
+empty :: BiMap a
 
 newtype DAG = DAG (BiMap Node) deriving Show
 \end{minted}
