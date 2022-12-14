@@ -19,6 +19,8 @@
     "graphicx"
     "listings"
     "minted")
+   (LaTeX-add-labels
+    "fig:hashcons")
    (LaTeX-add-bibliographies
     "references"))
  :latex)

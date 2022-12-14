@@ -133,9 +133,18 @@ plotAddChains size =
   let
     chainsData = map (\(x,y) -> (fromIntegral x,fromIntegral y))
       [ (n,dagCnt $ snd $ buildDAG $ addChains n $ variable "x") | n <- [0..size] ]
-  in plot (PNG "plot.png") $ Data2D [Title "Hashcons Scaling",Style Lines] [] chainsData
+  in plot (PNG "plot.png") $ Data2D [Title "Hashcons Scaling",Style Linespoints,Color Red] [] chainsData
 
-  -- let
-  --   x1 = add x0 x0
-  --   x2 = add x1 x1
-  -- in x2
+
+-- * Explicit Sharing
+
+class ExpLet repr where
+  let_ :: repr a -> (repr a -> repr b) -> repr b
+
+instance ExpLet Graph where
+  let_ e f = Graph (do x <- unGraph e
+                       unGraph $ f (Graph (return x)))
+
+-- | Example of explicit sharing
+addChainsE :: (Exp repr,ExpLet repr) => Int -> repr Int -> repr Int
+addChainsE n x0 = head $ drop n $ iterate (\xn -> let_ xn (\x -> add x x)) x0

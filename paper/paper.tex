@@ -238,24 +238,81 @@ add e1 e2 = Graph (do
 The values {\bf h1} and {\bf h2} need to be explicitely evaluated through the
 State monad, meaning even if {\bf e1} and {\bf e2} are the same shared Haskell
 value, their underlying computations will be performed twice. Hash-consing will
-prevent these redundencies from appearing in the resulting DAG, the the entire
+prevent these redundencies from appearing in the resulting DAG, but the entire
 unshared AST wil still be traversed, performing a hash-cons on each node.
 
-TODO describe add-chains example
-
-TODO translate to kiselyov's language
+Consider a chain of {\bf add}'s  with sharing, for example
 \begin{minted}{haskell}
-addChains :: forall repr. CoreISA repr => (repr VR, repr VR, repr VR, repr VR) -> (repr VR, repr VR, repr VR, repr VR)
-addChains =
-      add2 . add1
-    . add2 . add1
-    . add2 . add1
-    . add2 . add1
-    . add2 . add1
+addChains :: Exp repr => Expr Int -> Expr Int
+addChains x0 = let
+    x1 = add x0 x0
+    x2 = add x1 x1
+    ...
+  in xn
 \end{minted}
 
+\begin{figure}
+  \centering
+  \includegraphics[width=0.6\textwidth]{figs/hashcons.png}
+  \caption{Number of hashcons to add operations performed} \label{fig:hashcons}
+\end{figure}
+As you can see from figure \ref{fig:hashcons}, this code will perform approximately
+$2^{n+1}$ hashcons operations, where n is the number of {\bf add}'s.
+
 \subsection{Explicit Sharing and Limitations}
-TODO
+
+\cite{kiselyov:sharing} acknowledges the amount of computation with hash-consing
+can get out of control, and proposes an ad-hoc solution, explicit sharing via a
+custom let construct
+\begin{minted}{haskell}
+class ExpLet repr where
+  let_ :: repr a -> (repr a -> repr b) -> repr b
+instance ExpLet Graph where
+  let_ e f = Graph (do x <- unGraph e
+                     unGraph $ f (Graph (return x)))
+
+addChains x =
+  let_ x (\x0 ->
+  let_ (add x0 x0)  (\x1 ->
+  let_ (add x1 x1)  (\x2 ->
+   ...
+  )))
+\end{minted}
+This makes the code a bit clunky and adds an extra burden on the DSL
+writer, but it prevents unnecessary hash-consing in our example. However the
+method has it's limitations, suppose we want to extend our DSL to support
+functions that return multiple outputs, such as tuples or container types like
+lists (for example \mintinline{haskell}{vadd :: (repr Int,repr Int) -> (repr Int,repr
+  Int)}). First of all, we need to implement different versions of the custom let
+construct to correspond to the number of outputs
+\begin{minted}{haskell}
+class ExpLet repr where
+  let_ :: repr a -> (repr a -> repr b) -> repr b
+  let_ 2 :: repr a -> (repr a -> (repr b,repr c)) -> (repr b,repr c)
+
+instance ExpLet repr where
+   ...
+   let_2 e f = let
+       g0 = Graph (do x <- unGraph e
+                        let (o0,o1) = f (Graph (return x))
+                        unGraph o0)
+       g1 = Graph (do x <- unGraph e
+                        let (o0,o1) = f (Graph (return x))
+                        unGraph o1)
+       in (g0,g1)
+\end{minted}
+If need be, its possible to enumerate custom let instances for every amount of
+outputs or container types we would need, we could even use template Haskell to
+accomplish this. However, this custom let construct now has a new source of
+redundancy in its outputs. Each output it returns will now have to individually
+evaluate it's input, so a chain of DSL functions that output 2 or more values
+will suffer from the same exponential scaling of hashcons.
+
+One solution to this issue is to integrate container types such as tuples and lists
+into the DSL language. However doing this will essentially make the DSL ``less
+embedded'', manipulating tuple values will be cumbersome constantly requiring
+calls to custom implementations of {\bf fst}/{\bf snd} etc. And for lists you'll
+lose all access to built-in Haskell list functionality.
 
 \section{Implicit Sharing Via ByteString ASTs}
 TODO
