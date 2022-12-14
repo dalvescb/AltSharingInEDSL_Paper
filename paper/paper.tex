@@ -221,8 +221,8 @@ Implicit sharing via hash-consing prevents duplication in the resulting DAG, but
 unfortunately doesn't prevent redundant computation. Consider the following
 equivalent attempt at using Haskell's built-in sharing in the finally tagless DSL
 \begin{minted}{haskell}
-redundant :: Exp Graph -> Exp Graph -> Exp Graph
-redundant x y =
+dslSharing :: Exp Graph -> Exp Graph -> Exp Graph
+dslSharing x y =
   let
     z = add x y
   in add z z
@@ -235,7 +235,11 @@ add e1 e2 = Graph (do
                    h2 <- unGraph e2
                    hashcons $ NAdd h1 h2)
 \end{minted}
-In order to
+The values {\bf h1} and {\bf h2} need to be explicitely evaluated through the
+State monad, meaning even if {\bf e1} and {\bf e2} are the same shared Haskell
+value, their underlying computations will be performed twice. Hash-consing will
+prevent these redundencies from appearing in the resulting DAG, the the entire
+unshared AST wil still be traversed, performing a hash-cons on each node.
 
 TODO describe add-chains example
 

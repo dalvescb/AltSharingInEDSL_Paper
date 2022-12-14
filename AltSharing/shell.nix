@@ -25,6 +25,7 @@ in nixpkgs.haskell.lib.buildStackProject {
       nixpkgs.haskellPackages.unordered-containers
 		  (nixpkgs.haskell-language-server.override { supportedGhcVersions = [ "924" ]; })
 		  nixpkgs.gnumake
+      nixpkgs.gnuplot
 		  nixpkgs.coreutils
 		  nixpkgs.hdf5
 		  nixpkgs.fftw

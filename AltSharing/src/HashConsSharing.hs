@@ -6,9 +6,9 @@ module HashConsSharing where
 import Prelude hiding (exp)
 import qualified Data.Map.Strict as Map
 import Data.Map.Strict (Map)
-import Debug.Trace
 import Data.Word
 import Control.Monad.State.Strict
+import Graphics.EasyPlot
 
 -- * Data Type based DSL
 
@@ -23,6 +23,7 @@ v0 = Variable "v0"
 exp0 = Add v0 (Constant 0)
 exp1 = Add exp0 exp0
 
+-- 
 -- * Finally Tagless Style DSL
 
 -- | Finally Tagless Style Expression DSL
@@ -94,7 +95,9 @@ empty :: BiMap a
 empty = BiMap Map.empty 0
 
 -- | A Directed Acyclic Graph is a BiMap between Node and NodeID
-newtype DAG = DAG (BiMap Node) deriving Show
+data DAG = DAG { dagMAP :: BiMap Node  -- | A map from Node to NodeID
+               , dagCnt :: Int -- | used to track # of hashcons performed
+               } deriving Show
 
 -- | DAG construction representation via the State monad
 newtype Graph a = Graph { unGraph :: State DAG NodeID }
@@ -107,13 +110,32 @@ instance Exp Graph where
                      h2 <- unGraph e2
                      hashcons $ NAdd h1 h2)
 
+buildDAG g = runState (unGraph g) (DAG empty 0)
+
 -- | naive implementation of hash consing, insert a node into the DAG only if it isn't
 -- already there
 hashcons :: Node -> State DAG NodeID
 hashcons e = do
-  DAG m <- get
-  traceM $ "hashcons performed"
+  DAG m cnt <- get
+  modify (\dag -> dag { dagCnt = cnt+1}) -- track number of hashcons performed
   case lookup_key e m of
     Nothing -> let (k,m') = insert e m
-               in put (DAG m') >> return k
+               in modify (\dag -> dag { dagMAP = m' })
+                  >> return k
     Just k -> return k
+
+
+-- | Example of exponential scale of hash-consing
+addChains :: Exp repr => Int -> repr Int -> repr Int
+addChains n x0 = head $ drop n $ iterate (\x -> add x x) x0
+
+plotAddChains size =
+  let
+    chainsData = map (\(x,y) -> (fromIntegral x,fromIntegral y))
+      [ (n,dagCnt $ snd $ buildDAG $ addChains n $ variable "x") | n <- [0..size] ]
+  in plot (PNG "plot.png") $ Data2D [Title "Hashcons Scaling",Style Lines] [] chainsData
+
+  -- let
+  --   x1 = add x0 x0
+  --   x2 = add x1 x1
+  -- in x2
