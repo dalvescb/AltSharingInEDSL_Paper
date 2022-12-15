@@ -17,9 +17,12 @@
     "llncs10"
     "fontenc"
     "graphicx"
-    "listings")
+    "listings"
+    "minted")
    (LaTeX-add-labels
-    "fig:hashcons")
+    "limithashcons"
+    "fig:hashcons"
+    "limitexplicit")
    (LaTeX-add-bibliographies
     "references"))
  :latex)

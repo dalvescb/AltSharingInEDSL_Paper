@@ -32,7 +32,7 @@ data Node = NAdd NodeID NodeID
 
 -- | A Directed Acyclic Graph is inside the values of the Trie
 data DAG = DAG { dagTrie :: Trie (Node,NodeID) -- | a trie from bytestrings to Node/NodeID
-               , dagMaxID :: Int -- | used to track # of hashcons performed
+               , dagMaxID :: Int -- | used to track # of triecons performed
                } deriving Show
 
 -- | DAG construction representation via the State monad
@@ -51,9 +51,9 @@ buildStringAST node args =
   in opString <> argsString
 
 
--- TODO call me something different then hashcons?
-hashcons :: ByteString -> Node -> State DAG NodeID
-hashcons sAST node = do
+-- TODO call me something different then triecons?
+triecons :: ByteString -> Node -> State DAG NodeID
+triecons sAST node = do
  DAG trie maxID <- get
  case Trie.lookup sAST trie of
    Nothing -> let maxID' = maxID+1
@@ -68,7 +68,7 @@ seqArgs inps =
   let
     seqArg (Graph sT sAST) =
       do DAG trie _ <- get
-         case Trie.lookup sAST  trie of
+         case Trie.lookup sAST trie of
            Nothing -> sT
            Just (_,nodeID) -> return nodeID
   in sequence $ map seqArg inps
@@ -77,19 +77,18 @@ instance Exp Graph where
   constant x = let
     node = NConstant x
     sAST = buildStringAST node []
-    in Graph (hashcons sAST $ NConstant x) sAST
+    in Graph (triecons sAST $ NConstant x) sAST
   variable x = let
     node = NVariable x
     sAST = buildStringAST node []
-    in Graph (hashcons sAST $ NVariable x) sAST
+    in Graph (triecons sAST $ NVariable x) sAST
   add e1 e2 = let
       sAST = buildStringAST (NAdd undefined undefined) [unStringAST e1,unStringAST e2]
       sT = do ns <- seqArgs [e1,e2]
               case ns of
-                [n1,n2] -> hashcons sAST $ NAdd n1 n2
+                [n1,n2] -> triecons sAST $ NAdd n1 n2
                 _ -> error "black magic"
     in Graph sT sAST
-
 
 buildDAG g = runState (unGraph g) (DAG Trie.empty 0)
 

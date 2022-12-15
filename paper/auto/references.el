@@ -9,6 +9,7 @@
     "carette:finallytagless"
     "ershov1958:consing"
     "filliatre:typesafeconsing"
-    "elliott:compilingembedded"))
+    "elliott:compilingembedded"
+    "thai2021type"))
  '(or :bibtex :latex))
 

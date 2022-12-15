@@ -124,7 +124,6 @@ hashcons e = do
                   >> return k
     Just k -> return k
 
-
 -- | Example of exponential scale of hash-consing
 addChains :: Exp repr => Int -> repr Int -> repr Int
 addChains n x0 = head $ drop n $ iterate (\x -> add x x) x0
