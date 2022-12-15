@@ -26,6 +26,8 @@ dependencies:
 - easyplot
 - containers
 - unordered-containers
+- bytestring
+- bytestring-trie
 
 ghc-options:
 - -Wall

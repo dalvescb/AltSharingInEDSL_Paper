@@ -26,7 +26,7 @@
 \title{Alternative Methods for Implementing
     Explicit and Finding Implicit Sharing in embedded DSLs}
 %
-%\titlerunning{Abbreviated paper title}
+\titlerunning{Alternative Explicit and Implicit Sharing}
 % If the paper title is too long for the running head, you can set
 % an abbreviated paper title here
 %
@@ -36,7 +36,7 @@ Lucas Dutton \and
 Steven Gonder
 }
 %
-\authorrunning{F. Author et al.}
+\authorrunning{C. D'Alves et al.}
 % First names are abbreviated in the running head.
 % If there are more than two authors, 'et al.' is used.
 %
@@ -278,13 +278,14 @@ addChains x =
    ...
   )))
 \end{minted}
-This makes the code a bit clunky and adds an extra burden on the DSL
-writer, but it prevents unnecessary hash-consing in our example. However the
-method has it's limitations, suppose we want to extend our DSL to support
-functions that return multiple outputs, such as tuples or container types like
-lists (for example \mintinline{haskell}{vadd :: (repr Int,repr Int) -> (repr Int,repr
-  Int)}). First of all, we need to implement different versions of the custom let
-construct to correspond to the number of outputs
+This makes the code a bit clunky and adds an extra burden on the DSL writer, but
+it prevents unnecessary hash-consing in our example. However the method has it's
+limitations, suppose we want to write a DSL function that returns multiple
+outputs, such as tuples or container types like lists (for example
+\mintinline{haskell}{vadd :: (repr Int,repr Int) -> (repr Int,repr Int)}). %TODO
+                                % need to give implementation of this function?
+First of all, we need to implement different versions of the custom let construct to
+correspond to the number of outputs
 \begin{minted}{haskell}
 class ExpLet repr where
   let_ :: repr a -> (repr a -> repr b) -> repr b
@@ -308,11 +309,12 @@ redundancy in its outputs. Each output it returns will now have to individually
 evaluate it's input, so a chain of DSL functions that output 2 or more values
 will suffer from the same exponential scaling of hashcons.
 
-One solution to this issue is to integrate container types such as tuples and lists
-into the DSL language. However doing this will essentially make the DSL ``less
-embedded'', manipulating tuple values will be cumbersome constantly requiring
-calls to custom implementations of {\bf fst}/{\bf snd} etc. And for lists you'll
-lose all access to built-in Haskell list functionality.
+One solution to this issue is to integrate container types such as tuples and
+lists into the DSL language. However doing this will take away form the
+advantages of having an embedded language, manipulating tuple values will be
+cumbersome constantly requiring calls to custom implementations of {\bf
+  fst}/{\bf snd} etc. And for lists you'll lose all access to built-in Haskell
+list functionality.
 
 \section{Implicit Sharing Via ByteString ASTs}
 TODO
