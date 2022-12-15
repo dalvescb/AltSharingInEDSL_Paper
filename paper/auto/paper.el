@@ -17,8 +17,7 @@
     "llncs10"
     "fontenc"
     "graphicx"
-    "listings"
-    "minted")
+    "listings")
    (LaTeX-add-labels
     "fig:hashcons")
    (LaTeX-add-bibliographies
