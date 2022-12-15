@@ -92,3 +92,7 @@ instance Exp Graph where
 
 
 buildDAG g = runState (unGraph g) (DAG Trie.empty 0)
+
+-- | Example of exponential scale of hash-consing
+addChains :: Exp repr => Int -> repr Int -> repr Int
+addChains n x0 = head $ drop n $ iterate (\x -> add x x) x0

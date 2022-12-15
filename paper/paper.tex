@@ -317,11 +317,151 @@ cumbersome constantly requiring calls to custom implementations of {\bf
 list functionality.
 
 \section{Implicit Sharing Via ByteString ASTs}
-TODO
+
+The heart of our problem is whenever we need to sequence the state of the inputs
+for one of our DSL functions we want to first check if it's already been
+evaluated. But how do we do that without first evaluating it to gain access to
+it's unique NodeID. We need some other way to uniquely identify it.
+
+Our proposed solution is too build an AST using byte strings along with our
+DAG, but hold it outside of the State monad. We can then build our DAG using a
+Trie, using the byte string AST to lookup our node identifiers instead.
+% TODO reference literature on tries
+
+\begin{minted}{haskell}
+data Graph a = Graph { unGraph :: State DAG NodeID
+                     , stringAST :: ByteString }
+
+data DAG = DAG { Trie (Node,NodeID)
+               } deriving Show
+\end{minted}
+
+The Trie essentially serves as our new BiMap, the resulting DAG contained in its
+lookup values. We essentially still perform the hash-consing technique but using
+the AST to perform the lookup
+\begin{minted}{haskell}
+hashcons :: ByteString -> Node -> State DAG NodeID
+hashcons sAST node = do
+ DAG trie maxID <- get
+ case Trie.lookup sAST trie of
+   Nothing -> let maxID' = maxID+1
+                  trie' = Trie.insert sAST (node,maxID+1) trie
+               in do put $ DAG trie' maxID'
+                     return maxID'
+   Just (_,nodeID) -> return nodeID
+
+instance Exp Graph where
+  constant x = let
+    node = NConstant x
+    sAST = buildStringAST node []
+    in Graph (hashcons sAST $ NConstant x) sAST
+  variable x = let
+    node = NVariable x
+    sAST = buildStringAST node []
+    in Graph (hashcons sAST $ NVariable x) sAST
+  add e1 e2 = let
+      sAST = buildStringAST (NAdd undefined undefined) [unStringAST e1,unStringAST e2]
+      sT = do ns <- seqArgs [e1,e2]
+              case ns of
+                [n1,n2] -> hashcons sAST $ NAdd n1 n2
+                _ -> error "black magic"
+    in Graph sT sAST
+
+\end{minted}
+
+The instance implementations for \mintinline{haskell}{constant} and
+\mintinline{haskell}{variable} work roughly the same, the novelty of the method
+is in how we handle DSL functions that take other DSL State as input like
+\mintinline{haskell}{add}. First we need to construct a byte string AST from
+it's input ASTs, there's a lot of ways we could go about this to attempt to
+minimize memory. A naive implementation would look similar to a pretty printer.
+Then we need to sequence it's inputs without evaluating the inner state if
+unnecessary. We do this through the implementation of \mintinline{haskell}{seqArgs}
+\begin{minted}{haskell}
+seqArgs :: [Graph a] -> State DAG [NodeID]
+seqArgs inps =
+  let
+    seqArg (Graph sT sAST) =
+      do DAG trie _ <- get
+         case Trie.lookup sAST  trie of
+           Nothing -> sT
+           Just (_,nodeID) -> return nodeID
+  in sequence $ map seqArg inps
+\end{minted}
+
+We only evaluate the inner state \mintinline{haskell}{sT} of each argument if we
+fail to look up its corresponding byte string AST in the Trie. This will prevent
+redundant hashconsing without the need for explicit sharing. However this method
+suffers from its own drawbacks.
 
 \subsection{Memory Limitations}
-TODO
+The byte string AST being built will itself suffer from lack of sharing. We're
+essentially trading extra computation for extra memory. This is often a good
+tradeoff, since memory is so plentiful in modern hardware. But under the right
+conditions it can become an issue
+
+TODO include heap profiling analysis
+
 \section{Explicit Sharing Of ByteString ASTs}
+We propose another solution to this issue, taking inspiration again from the
+\cite{kiselyov:sharing}, we can introduce an explicit construct for specifying
+sharing. This time, the construct will substitute the current byte string for a
+more compact label. For safety purposes, we need to keep track of a table of
+these labels and their corresponding ASTs, to make sure we don't insert of the
+same labels.
+\begin{minted}{haskell}
+data DAG = DAG { dagTrie :: Trie (Node,NodeID)
+               , dagCacheMap :: Map ByteString ByteString
+               } deriving Show
+
+data Graph a = Graph { unGraph :: State DAG NodeID
+                     , stringAST :: ByteString
+                     , addCache :: Maybe ByteString }
+
+class Cacheable repr where
+  cache :: ByteString -> repr ByteString -> repr ByteString
+instance Cacheable Graph where
+  cache s' (Graph g s _) = Graph g s' (Just s)
+
+-- TODO better example?
+test x y = let
+  z = cache "z" (add x y)
+  in add z z
+\end{minted}
+
+The cache operation replaces the current byte string AST with a new label, and
+we'll define a new operation \mintinline{haskell}{runCache} that will check if
+the label already exists in the cache map before inserting it.
+\begin{minted}{haskell}
+runCache :: ByteString -> Maybe ByteString -> Trie ByteString -> State DAG ()
+runCache sAST mAddCache cacheMap = do
+  case mAddCache of
+    Nothing -> return ()
+    Just sAST0 ->
+      case Trie.lookup sAST cacheMap of
+        Nothing -> let cacheMap' = Trie.insert sAST sAST0 cacheMap
+                   in modify (\dag -> dag { dagCache = cacheMap' })
+        Just sAST1 -> if sAST1 == sAST0
+                         then return ()
+                         else error $ "attempted to recache: " ++ show sAST
+
+
+seqArgs :: [Graph a] -> State DAG [NodeID]
+seqArgs inps =
+  let
+    seqArg (Graph sT sAST mCache) =
+      do DAG trie cacheMap _ <- get
+         runCache sAST mCache cacheMap
+         ...
+\end{minted}
+We need to make sure we don't attempt to insert the same cache label for two
+different ASTs. Unfortunately, if there is a collision there's no way to escape
+the State monad to prevent or modify the subtitution. The best we can do is
+crash the program, or if we use a monad tansformer, we ould use
+Control.Monad.Except to through an exception. Either way it's up to the DSL
+writer to insure they don't reuse the same label.
+
+\section{Conclusion}
 TODO
 
 \subsubsection{Acknowledgements} Please place your acknowledgments at
@@ -338,7 +478,7 @@ the end of the paper, preceded by an unnumbered run-in heading (i.e.
 
 \end{document}
 
-% LocalWords:  DSLs unsafePerformIO Haskell's AST typeclass tagless
+% LocalWords:  DSLs unsafePerformIO Haskell's AST typeclass tagless Trie
 % Local Variables:
 % LaTeX-verbatim-environments-local: ("minted")
 % eval: (setq-local LaTeX-indent-environment-list (cons '("minted" current-indentation) (default-value 'LaTeX-indent-environment-list)))
