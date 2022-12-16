@@ -32,9 +32,9 @@
 % an abbreviated paper title here
 %
 \author{Curtis D'Alves \and
-Christopher Anand \and
 Lucas Dutton \and
-Steven Gonder
+Steven Gonder \and
+Christopher Kumar Anand
 }
 %
 \authorrunning{C. D'Alves et al.}
@@ -49,17 +49,22 @@ Steven Gonder
 TODO The abstract should briefly summarize the contents of the paper in
 150--250 words.
 
-\keywords{First keyword  \and Second keyword \and Another keyword.}
+\keywords{DSL  \and sharing \and common-subexpression elimination \and Haskell.}
 \end{abstract}
 %
 %
 %
 \section{Introduction}
 
-In his paper ``Implementing explicit and finding implicit sharing in embedded
-DSLs'' \cite{kiselyov:sharing}, Kiselyov presents a method for implementing
+Kiselyov \cite{kiselyov:sharing}  presents a method for implementing
 eDSLs in finally tagless form that generate a directed acyclic graph (DAG) with
-sharing. The interface for such DSL's uses the following format
+sharing. 
+However, as we will explain in sections~\ref{limithashcons} and
+\ref{limitexplicit}, for DSL functions that return multiple
+outputs (e.g., tuples, lists, etc.), Kiselyov's method of detecting sharing may require computation exponential in the size of the program,
+and his method of explicitly declaring sharing is inapplicable.
+
+In the toy example
 \begin{minted}{haskell}
 class Exp repr where
   variable :: String -> repr Int
@@ -67,56 +72,59 @@ class Exp repr where
   add :: repr Int -> repr Int -> repr Int
   novel :: (repr Int,repr Int) -> (repr Int,repr Int)
 \end{minted}
-However, as we will explain in sections~\ref{limithashcons} and
-\ref{limitexplicit}, when the DSL contains functions which return multiple
-outputs (e.g., tuples, lists, etc.) such as \mintinline{haskell}{novel} in the
-above code snippet, Kiselyov's method of detecting sharing scales exponentially,
-and their method of explicitly declaring sharing is inapplicable. In our work,
+the function \mintinline{haskell}{novel} exhibits this problem.
+ In our work,
 this translated into the inability to process large library functions.
 
-In this paper, we will review Kiselyov's methods, identifying core issue, and
-present methods for implementing embedded DSLs with sharing that are both safe
-and maintain all the benefits of being embedded in the Haskell ecosystem. This
-means DSL functions are type-safe, do not require the use of unsafe referencing
-(i.e., via unsafePerformIO) and can return Haskell's container types (i.e.,
-tuples, lists, etc) without breaking sharing.
+\smallskip
+In this paper, we review Kiselyov's methods, identifying the core issue, and
+present methods for implementing embedded DSLs with sharing that avoid  unsafe referencing (i.e., \mintinline{haskell}{unsafePerformIO}) \cite{gill:observablesharing}, maintain all the benefits of being embedded in the Haskell ecosystem and are computationally feasible. This
+means DSL functions are pure, type-safe and can return Haskell container types (i.e.,
+tuples, lists, etc.) without breaking sharing.
 
 \section{Background: Detecting Sharing}
 
-A naive DSL implementation of an expression in Haskell can be done via standard
-Haskell data types, for example:
-
+Consider the naive DSL implemented as a Haskell data type:
 \begin{minted}{haskell}
 data Exp
   = Add Exp Exp
   | Variable String
   | Constant Int
-
--- Example
+\end{minted}
+Expressions generate Abstract Syntax Trees (ASTs),
+but consider this example,
+\begin{minted}{haskell}
 v0 = Variable "v0"
 exp0 = Add v0 (Constant 0)
 exp1 = Add exp0 exp0
 \end{minted}
+in which the expression  \mintinline{haskell}{exp0} is shared,
+and will therefore be stored once in memory.
+For large expressions with lots of sharing,
+this can make a substantial difference.
+However,
+one of the first things the developer will do is write a pretty printer.
+That recursive function will traverse the data structure as a tree,
+and pretty print \mintinline{haskell}{exp0} twice.
+This inefficiency is a problem for code generation,
+and naive traversal of the AST does the opposite of common-subexpression elimination performed by a good optimizing compiler.
+To avoid this,
+rather than representing the code as an AST, 
+we should use a DAG, retaining all of the sharing in the original DSL code. 
 
-Note the DSL generates a tree, or to be more specific an Abstract Syntax Tree
-(AST). Common features a DSL implementer might implement would include code
-generation or pretty printing. Simple traversal of the AST for either of these
-operations would result in duplication, for example in the above code snippet
-the AST for {\bf exp0} will be traversed twice. For code generation in
-particular this would be problematic, in order to circumvent this problem in
-general we need to perform common subexpression elimination by converting the
-AST into a directed acyclic graph. % #TODO cite literature
+One way of maintaining sharing is by observable sharing (see Section 3 in \cite{kiselyov:sharing}).
+In Haskell, this requires a monadic interface.
+Monads are useful, but don't match the expectations of domain experts \cite{odonnell:embedding}.
 
-TODO describe sharing through pointer comparison in monads
 \subsection{Finally Tagless DSLs}
 
-Monads are useful, but don't make for a very user friendly DSL. It would be nice
+ It would be nice
 to make use of monadic state when we need it (i.e., for converting to a DAG)
-while hiding it behind a nice pure interface. The final tagless approach of
+while hiding it behind a nice pure interface. The finally tagless approach 
 \cite{carette:finallytagless} is popular for accomplishing this. In this
-approach, DSL expressions are built using typeclass methods that wrap the DSL in
-a parameterized representation. For example, the previous data type based DSL
-could be written in finally tagless as
+approach, DSL expressions are built using type-class methods that wrap the DSL in
+a parameterized representation. For example, the previous data-type-based DSL
+could be written in finally tagless style as
 
 \begin{minted}{haskell}
 class Exp repr where
@@ -126,7 +134,7 @@ class Exp repr where
 \end{minted}
 
 We can then create different instances to implement different functionality.
-For example, we can implement a pretty printer for our AST like so
+For example, we can implement a pretty printer for our AST as
 \begin{minted}{haskell}
 newtype Pretty a = Pretty { unPretty :: String }
 
@@ -136,40 +144,39 @@ instance Exp Pretty where
   constant x = Pretty $ show x
 \end{minted}
 
-Finally tagless style provides extensible, user friendly DSLs. However there
-are still some complications when using it to implement sharing.
+Finally tagless style provides extensible, user friendly DSLs. 
 
-\subsection{Implicit Sharing Via Hash-Consing}
+\subsection{Implicit Sharing via Hash-Consing}
 
-In this section, we'll provide an overview of Kiselyov's method in
-\cite{kiselyov:sharing} for detection of implicit sharing in finally tagless
-style is presented via the method of hash-consing, and discuss it's limitations
-in more detail. This method first involves defining a DAG type, for example
+Kiselyov's method
+ for detecting implicit sharing in finally tagless
+style uses hash-consing \cite{kiselyov:sharing}. 
+Hash-consing is based on a bijection of nodes and a set of identifiers,
+e.g., with interface 
 \begin{minted}{haskell}
-type NodeID = Int
-data Node = NAdd NodeID NodeID
-          | NVariable String
-          | NConstant Int
-
-
 data BiMap a -- abstract
 lookup_key :: Ord a => a -> BiMap a -> Maybe Int
 lookup_val :: Int -> BiMap a -> a
 insert :: Ord a => a -> BiMap a -> (Int,BiMap a)
 empty :: BiMap a
-
-newtype DAG = DAG (BiMap Node) deriving Show
 \end{minted}
+An efficient implementation using hashing and linear probing is given by Thai
+in his Master's thesis \cite{thai2021type}.
 
-Note the purpose of the BiMap type is to be able to quickly insert and lookup
-nodes (i.e., a bijection of node's and their unique identifiers), and is most
-optimally implemented as a hash table with linear probing. Such an
-implementation of hash-consing using linear probing for an embedded DSL is given
-in thesis \cite{thai2021type}. The representation for the finally tagless
-instance is then a wrapper around a State monad that holds DAG in its state and
-returns the current (top) NodeID.
-
+Nodes need to be uniquely identifiable, and shouldn't be a recursive data type,
+such as
 \begin{minted}{haskell}
+type NodeID = Int
+data Node = NAdd NodeID NodeID
+          | NVariable String
+          | NConstant Int
+\end{minted}
+The representation for the finally tagless
+instance is then a wrapper around a State monad that holds the DAG being constructed in its state and
+returns the current (top) \mintinline{haskell}{NodeID}:
+\begin{minted}{haskell}
+newtype DAG = DAG (BiMap Node) deriving Show
+
 newtype Graph a = Graph { unGraph :: State DAG NodeID }
 
 instance Exp Graph where
@@ -180,9 +187,8 @@ instance Exp Graph where
                      h2 <- unGraph e2
                      hashcons $ NAdd h1 h2)
 \end{minted}
-
-The trick to uncovering sharing in the implementation is implemented via the
-{\bf hashcons} function, which inserts a new node into the current DAG, but not
+The trick to uncovering sharing is in the
+\mintinline{hashcons} function, which inserts a new node into the current DAG, but not
 before checking if it is already there.
 \begin{minted}{haskell}
 hashcons :: Node -> State DAG NodeID
@@ -194,16 +200,12 @@ hashcons e = do
     Just k -> return k
 \end{minted}
 The technique is essentially that of
-hash-consing, popularized by its use in LISP compilers, but discovered long
-before that in 1958 \cite{ershov1958:consing}. Other works have explored the use
-of type safe hash consing in embedded DSLs, see \cite{filliatre:typesafeconsing}.
+hash-consing, popularized by its use in LISP compilers, but discovered by Ershov in 1958 \cite{ershov1958:consing}. Other works have explored the use
+of type-safe hash-consing in embedded DSLs, see \cite{filliatre:typesafeconsing}.
 
 \subsection{Limitations of Hash-Consing} \label{limithashcons}
 
-When we wrap our State monad in finally tagless style, we lose some of Haskell's
-built-in sharing capability. Consider the following code, note that the use of
-local variables explicitely defines the computation $x + y$ to only be computed
-once
+When we wrap our State monad in finally tagless style, we lose some expected sharing. In the following code, the use of the let causes the computation $x + y$ to only occur once
 \begin{minted}{haskell}
 haskellSharing x y=
  let
@@ -221,18 +223,20 @@ dslSharing x y =
     z = add x y
   in add z z
 \end{minted}
-Note {\bf z} is a wrapper around a State monad. Recall the implementation of
-{\bf add} via hash consing, the values {\bf h1} and {\bf h2} need to be
-explicitely evaluated through the State monad, meaning even if {\bf e1} and {\bf
-  e2} are the same shared Haskell value, their underlying computations will be
-performed twice. Hash-consing will prevent these redundencies from appearing in
-the resulting DAG, but the entire unshared AST wil still be traversed,
-performing a hash-cons on each node.
+Knowing that \mintinline{haskell}{z} is a wrapper around a state monad,
+and recalling the implementation of
+\mintinline{haskell}{add} via hash-consing above, 
+the values \mintinline{haskell}{h1} and \mintinline{haskell}{h2} are
+separately evaluated through the state monad, even if \mintinline{haskell}{e1} and \mintinline{haskell}{e2} are the same shared Haskell value. 
+Hash-consing will prevent these redundancies from appearing in
+the resulting DAG, 
+but in the process of discovering the sharing, the entire unshared AST will still be traversed.
 
-Consider a chain of {\bf add}'s  with sharing, for example
+Consider a chain of \mintinline{haskell}{add}s  with sharing, for example
 \begin{minted}{haskell}
 addChains :: Exp repr => Expr Int -> Expr Int
-addChains x0 = let
+addChains x0 = 
+  let
     x1 = add x0 x0
     x2 = add x1 x1
     ...
@@ -242,15 +246,15 @@ addChains x0 = let
 \begin{figure}
   \centering
   \includegraphics[width=0.6\textwidth]{figs/hashcons.png}
-  \caption{Number of calls to \mintinline{haskell}{hashcons} to \mintinline{haskell}{add} operations performed} \label{fig:hashcons}
+  \caption{Number of calls to \mintinline{haskell}{hashcons} plotted against the number of \mintinline{haskell}{add} operations performed.} \label{fig:hashcons}
 \end{figure}
-As you can see from figure \ref{fig:hashcons}, this code will perform approximately
-$2^{n+1}$ hashcons operations, where n is the number of {\bf add}'s.
+As shown in Fig.~\ref{fig:hashcons}, this code will perform approximately
+$2^{n+1}$ \mintinline{haskell}{hashcons} operations, where $n$ is the number of \mintinline{haskell}{add}s.
 
 \subsection{Explicit Sharing and Limitations} \label{limitexplicit}
 
-\cite{kiselyov:sharing} acknowledges the amount of computation with hash-consing
-can get out of control, and proposes an ad-hoc solution, explicit sharing via a
+Kiselyov \cite{kiselyov:sharing} recognized that the amount of computation with hash-consing ``may take a long time for large programs,'' 
+and proposed an ad-hoc solution, explicit sharing via a
 custom let construct
 \begin{minted}{haskell}
 class ExpLet repr where
@@ -258,7 +262,9 @@ class ExpLet repr where
 instance ExpLet Graph where
   let_ e f = Graph (do x <- unGraph e
                      unGraph $ f (Graph (return x)))
-
+\end{minted}
+which can be used to rewrite \mintinline{haskell}{addChains} as
+\begin{minted}{haskell}
 addChains x =
   let_ x (\x0 ->
   let_ (add x0 x0)  (\x1 ->
@@ -269,99 +275,105 @@ addChains x =
 This makes the code a bit clunky and adds an extra burden on the DSL writer, but
 it prevents unnecessary hash-consing in our example.
 
-However the method has it's limitations, suppose we want to write a DSL function
-that returns multiple
-outputs, such as tuples or container types like lists (for example
-\mintinline{haskell}{novel :: (repr Int,repr Int) -> (repr Int,repr Int)}). When
-we go to implement DAG generation, we'll be forced to split the State monad into
-two
+However the method does not work for DSL functions
+returning multiple outputs via tuples or container types like lists. Recall the definition
+\begin{minted}{haskell}
+novel :: (repr Int,repr Int) -> (repr Int,repr Int)
+\end{minted}
+The problem is that DAG generation requires splitting the state monad in two:
 \begin{minted}{haskell}
 instance Exp Graph where
   ...
   novel e1 e2 = let
      g1 = Graph (do h1 <- unGraph e1
                     h2 <- unGraph e2
-                    h3 <- hashcons $ Novel h1 h2
-                    hashcons $ NovelOut1 h3)
+                    hashcons $ Novel1 h1 h2)
      g2 = Graph (do h1 <- unGraph e1
                     h2 <- unGraph e2
-                    h3 <- hashcons $ Novel h1 h2
-                    hashcons $ NovelOut2 h3)
+                    hashcons $ Novel2 h1 h2)
      in (g1,g2)
 \end{minted}
 Each output it returns will now have to be individually evaluated, so a
 chain of DSL functions that output 2 or more values will suffer from the same
-exponential scaling of hashcons operation. Furthermore, there's no good way to
-explicitely define sharing via a custom let construct because of closure.
+exponential explosion of hashcons operations,
+and trying to adapt the let construct above, 
+just creates another function function with the same problem (multiple outputs). 
 
 One solution to this issue is to integrate container types such as tuples and
-lists into the DSL language. However doing this will take away form the
-advantages of having an embedded language, manipulating tuple values will be
-cumbersome constantly requiring calls to custom implementations of {\bf
-  fst}/{\bf snd} etc. And for lists you'll lose all access to built-in Haskell
+lists into the DSL language. However doing this eliminates the
+advantage of having an embedded language.
+Manipulating tuple values will be
+cumbersome, constantly requiring calls to custom implementations of \mintinline{haskell}{fst},\mintinline{haskell}{snd} etc. 
+And for lists you'll lose access to built-in Haskell
 list functionality.
 
-\section{Implicit Sharing Via ByteString ASTs}
+\section{Implicit Sharing Via Byte String ASTs}
 
-The heart of our problem is whenever we need to sequence the state of the inputs
+The heart of our problem is that whenever we need to sequence the state of the inputs
 for one of our DSL functions we want to first check if it's already been
 evaluated. But how do we do that without first evaluating it to gain access to
-it's unique NodeID. We need some other way to uniquely identify it.
+its unique identifier. We need some way to uniquely identify it outside the monad.
 
-Our proposed solution is too build an AST using byte strings along with our
-DAG, but hold it outside of the State monad. We can then build our DAG using a
-Trie, using the byte string AST to lookup our node identifiers instead.
+Our proposed solution is to build a serialized AST using byte strings for each node along with our
+DAG.
+The byte string stays outside monad, while the DAG remains inside.
+We can do this efficiently by replacing the \mintinline{haskell}{BiMap}
+with a trie.
+In our toy example, we use package \texttt{bytestring-trie}.
 % TODO reference literature on tries
 
 \begin{minted}{haskell}
 data Graph a = Graph { unGraph :: State DAG NodeID
                      , stringAST :: ByteString }
 
-data DAG = DAG { Trie (Node,NodeID)
+data DAG = DAG { unTrie :: Trie (Node,NodeID)
+               , maxID  :: NodeID
                } deriving Show
 \end{minted}
+This looks a bit different because the \mintinline{haskel}{BiMap}
+was a bijective relation between nodes and node ids,
+whereas the trie maps byte strings to pairs (node,node id).
+To get the DAG expressed as a relation, project out the values of the trie.
 
-The Trie essentially serves as our new BiMap, the resulting DAG contained in its
-lookup values. We essentially still perform the hash-consing technique but using
-the AST to perform the lookup
+To prevent confusion, we rename the hash-consing function to \mintinline{haskel}{triecons}, as follows
 \begin{minted}{haskell}
-hashcons :: ByteString -> Node -> State DAG NodeID
-hashcons sAST node = do
- DAG trie maxID <- get
- case Trie.lookup sAST trie of
-   Nothing -> let maxID' = maxID+1
-                  trie' = Trie.insert sAST (node,maxID+1) trie
-               in do put $ DAG trie' maxID'
-                     return maxID'
-   Just (_,nodeID) -> return nodeID
-
+triecons :: ByteString -> Node -> State DAG NodeID
+triecons sAST node = do
+  DAG trie maxID <- get
+  case Trie.lookup sAST trie of
+    Nothing -> let maxID' = maxID+1
+                   trie' = Trie.insert sAST (node,maxID') trie
+                in do put $ DAG trie' maxID'
+                      return maxID'
+    Just (_,nodeID) -> return nodeID
+\end{minted}
+We use it to implement the DAG-building instance of the DSL,
+which looks a lot like the previous instance.
+The substantial differences are the 
+\mintinline{haskell}{buildStringAST} calls
+which you can think of as pretty printing, but optimized for the trie,
+and the use of \mintinline{haskell}{seqArgs} (explained below):
+\begin{minted}{haskell}
 instance Exp Graph where
   constant x = let
     node = NConstant x
     sAST = buildStringAST node []
-    in Graph (hashcons sAST $ NConstant x) sAST
+    in Graph (triecons sAST $ NConstant x) sAST
   variable x = let
     node = NVariable x
     sAST = buildStringAST node []
-    in Graph (hashcons sAST $ NVariable x) sAST
+    in Graph (triecons sAST $ NVariable x) sAST
   add e1 e2 = let
       sAST = buildStringAST "nadd" [e1,e2]
       sT = do ns <- seqArgs [e1,e2]
               case ns of
-                [n1,n2] -> hashcons sAST $ NAdd n1 n2
+                [n1,n2] -> triecons sAST $ NAdd n1 n2
                 _ -> error "black magic"
     in Graph sT sAST
-
 \end{minted}
-
-The instance implementations for \mintinline{haskell}{constant} and
-\mintinline{haskell}{variable} work roughly the same, the novelty of the method
-is in how we handle DSL functions that take other DSL State as input like
-\mintinline{haskell}{add}. First we need to construct a byte string AST from
-it's input ASTs, there's a lot of ways we could go about this to attempt to
-minimize memory. A naive implementation would look similar to a pretty printer.
-Then we need to sequence it's inputs without evaluating the inner state if
-unnecessary. We do this through the implementation of \mintinline{haskell}{seqArgs}
+The magic is in \mintinline{haskell}{seqArgs}.
+We only evaluate the inner state \mintinline{haskell}{sT} of each argument if we
+fail to look up its corresponding byte string AST in the Trie.
 \begin{minted}{haskell}
 seqArgs :: [Graph a] -> State DAG [NodeID]
 seqArgs inps =
@@ -374,10 +386,9 @@ seqArgs inps =
   in sequence $ map seqArg inps
 \end{minted}
 
-We only evaluate the inner state \mintinline{haskell}{sT} of each argument if we
-fail to look up its corresponding byte string AST in the Trie. This will prevent
-redundant hashconsing without the need for explicit sharing. However this method
-suffers from its own drawbacks.
+This will prevent
+redundant hashconsing without the need for explicit sharing,
+but at the expense of storing redundant byte strings. 
 
 \subsection{Memory Limitations}
 The byte string AST being built will itself suffer from lack of sharing. We're
@@ -392,11 +403,11 @@ We propose another solution to this issue, taking inspiration again from the
 \cite{kiselyov:sharing}, we can introduce an explicit construct for specifying
 sharing. This time, the construct will substitute the current byte string for a
 more compact label. For safety purposes, we need to keep track of a table of
-these labels and their corresponding ASTs, to make sure we don't insert of the
-same labels.
+these labels and their corresponding ASTs, to make sure we don't use the same label for different ASTs.
 \begin{minted}{haskell}
 data DAG = DAG { dagTrie :: Trie (Node,NodeID)
                , dagCacheMap :: Map ByteString ByteString
+               , maxID  :: NodeID
                } deriving Show
 
 data Graph a = Graph { unGraph :: State DAG NodeID
@@ -414,14 +425,14 @@ test x y = let
 \end{minted}
 
 The cache operation replaces the current byte string AST with a new label, and
-we'll define a new operation \mintinline{haskell}{runCache} that will check if
+we define a new operation \mintinline{haskell}{runCache} to check if
 the label already exists in the cache map before inserting it.
 \begin{minted}{haskell}
 runCache sAST mAddCache cacheMap = do
   case mAddCache of
     Nothing -> return ()
     Just sAST0 ->
-      case Trie.lookup sAST cacheMap of
+      case Map.lookup sAST cacheMap of
         Nothing -> let cacheMap' = insert sAST sAST0 cacheMap
                    in modify (\dag -> dag { dagCache = cacheMap' })
         Just sAST1 ->
@@ -438,28 +449,23 @@ seqArgs inps =
 \end{minted}
 We need to make sure we don't attempt to insert the same cache label for two
 different ASTs. Unfortunately, if there is a collision there's no way to escape
-the State monad to prevent or modify the subtitution. The best we can do is
-crash the program, or if we use a monad tansformer, we ould use
-Control.Monad.Except to through an exception. Either way it's up to the DSL
+the State monad to prevent or modify the substitution. 
+In the toy example, compilation crashes, but we could catch an exception instead.
+Either way it's up to the DSL
 writer to insure they don't reuse the same label.
 
 \section{Conclusion}
-We have presented a method for constructing finally tagless style DSL's with
-sharing detection, that allow for DSL functions to have multiple outputs via
-built-in haskell tuples of container types. It also avoids the use of unsafe
-referencing as performed when doing observable sharing like in the work of
-\cite{gill:observablesharing}.
+We have presented a method for constructing finally tagless style DSLs with
+sharing detection, that allow for multiple-output DSL functions. 
+It also avoids the use of unsafe referencing as performed when doing observable sharing, c.f. \cite{gill:observablesharing}.
 
-The method has its drawbacks in terms of memory usage, but these can be overcome
+The method has its drawbacks in terms of memory usage, but these can be mitigated
 by explicitly specifying sharing. This does present an extra burden on the DSL
 writer to implement explicit sharing when necessary and ensure labels are not
 reused. Future work may investigate the use of a preprocessor or plugin to
 automate explicit sharing.
 
-\subsubsection{Acknowledgements} This work drew heavily upon the work of Oleg
-Kiselyov, who's work on implicit and explicit sharing and finally tagless styles
-are the basis of our method
-
+\subsubsection{Acknowledgements} We thank NSERC and IBM Canada for supporting this work.
 %
 % ---- Bibliography ----
 %
