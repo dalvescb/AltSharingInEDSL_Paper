@@ -12,6 +12,7 @@
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage{minted}
+\usepackage{hyperref}
 
 % Used for displaying a sample figure. If possible, figure files should
 % be included in EPS format.
@@ -94,7 +95,7 @@ this translated into the inability to process large library functions.
 In this paper, we review Kiselyov's methods, identifying the core issue, and
 present methods for implementing embedded DSLs with sharing that avoid  unsafe referencing (i.e., \mintinline{haskell}{unsafePerformIO}) \cite{gill:observablesharing}, maintain all the benefits of being embedded in the Haskell ecosystem and are computationally feasible. This
 means DSL functions are pure, type-safe and can return Haskell container types (i.e.,
-tuples, lists, etc.) without breaking sharing.
+tuples, lists, etc.) without breaking sharing. All code will be hosted at \url{https://github.com/dalvescb/AltSharingInEDSL_Paper}
 
 \section{Background: Detecting Sharing}
 
@@ -438,7 +439,7 @@ class Substitute repr where
 instance Substitute Graph where
   subT s' (Graph g s _) = Graph g s' (Just s)
 
-test x y = let
+exampleSubT x y = let
   z = subT "z" (add x y)
   in add z z
 \end{minted}
@@ -484,6 +485,34 @@ Either way it's up to the DSL
 writer to insure they don't reuse the same label.
 
 \section{BenchMarking}
+
+Even with explicit sharing via substitutions, our method contains a reasonable
+amount of overhead in order to overcome the shortcomings of Kiselyov's method.
+The \mintinline{haskell}{addChains} example altered for explicit sharing with
+both methods presents a worse case scenario in terms of overhead comparison.
+Kiselyov's method is able to fully utilize it's explicit sharing and our method
+requires many substitution lookups.
+
+\begin{table}
+  \begin{tabular}{|l|l|l|l|l|l|l|l|}
+    \hline
+    {\bf Size } &  150 & 200 & 10000 & 50000 \\
+    \hline
+    {\bf HashCons time } &  0.0 secs & 0.0 secs & 0.1 secs & 0.3 secs \\
+    {\bf HashCons alloc } &  619,296 bytes & 739,304 bytes & 28,662,592 bytes & 155,993,544 bytes \\
+    {\bf TrieCons time } &   0.0 secs & 0.0 secs & 0.3 secs & 0.16 secs \\
+    {\bf TrieCons alloc } &  1,773,416 bytes & 2,333,680 bytes & 129,146,808 bytes & 723,437,504 bytes \\
+    \hline
+  \end{tabular}
+
+  \caption{Benchmarks of \mintinline{haskell}{addChains} example with full
+    explicit sharing.}\label{tab1}
+\end{table}
+
+Table \ref{tab1} gives a set of benchmarks comparing our method with Kiselyov's,
+both taking full advantage of explicit sharing. It's clear Kiselyov's method
+performs better in this situation, however it should be noted our method is
+still viable for solving very large DAG's in reasonable amounts of time / memory.
 
 \section{Conclusion}
 We have presented a method for constructing finally tagless style DSLs with

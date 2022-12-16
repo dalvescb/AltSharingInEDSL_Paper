@@ -7,7 +7,7 @@ import qualified ByteStringExplicit as BSE
 import qualified Data.Trie as Trie
 import qualified Data.Map as Map
 
-n = 2000
+n = 50000
 main :: IO ()
 main = let
    -- dag = Map.toList $ HCS.biMap $ HCS.dagMAP $ snd $ HCS.buildDAG $ HCS.addChainsE n $ HCS.variable "x"

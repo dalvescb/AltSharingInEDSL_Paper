@@ -18,11 +18,13 @@
     "fontenc"
     "graphicx"
     "listings"
-    "minted")
+    "minted"
+    "hyperref")
    (LaTeX-add-labels
     "limithashcons"
     "fig:hashcons"
-    "limitexplicit")
+    "limitexplicit"
+    "tab1")
    (LaTeX-add-bibliographies
     "references"))
  :latex)
