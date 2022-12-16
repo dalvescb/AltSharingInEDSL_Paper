@@ -331,7 +331,7 @@ list functionality.
 The heart of our problem is that whenever we need to sequence the state of the inputs
 for one of our DSL functions we want to first check if it's already been
 evaluated. But how do we do that without first evaluating it to gain access to
-its unique identifier. We need some way to uniquely identify it outside the monad.
+its unique identifier? We need some way to uniquely identify it outside the monad.
 
 Our proposed solution is to build a serialized AST using byte strings for each node along with our
 DAG.
@@ -418,8 +418,8 @@ a good tradeoff, since memory is so plentiful in modern hardware, but still
 presents an issue.
 
 \section{Explicit Sharing Of ByteString ASTs}
-We propose another solution to this issue, taking inspiration again from Kiselyov 
-\cite{kiselyov:sharing}, we can introduce an explicit construct for specifying
+We propose another solution to this issue, taking inspiration again from Kiselyov  
+\cite{kiselyov:sharing}, by introducing an explicit construct for specifying
 sharing. This time, the construct will substitute the current byte string for a
 more compact label. For safety purposes, we need to keep track of a table of
 these labels and their corresponding ASTs, to make sure we don't use the same label for different ASTs.
@@ -481,7 +481,7 @@ different ASTs. Unfortunately, if there is a collision there's no way to escape
 the state monad to prevent or modify the substitution.
 In the toy example, compilation crashes, but we could catch an exception instead.
 Either way it's up to the DSL
-writer to insure they don't reuse the same label.
+writer to ensure they don't reuse the same label.
 
 \section{BenchMarking}
 
