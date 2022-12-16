@@ -46,8 +46,22 @@ Steven Gonder
 \maketitle              % typeset the header of the contribution
 %
 \begin{abstract}
-TODO The abstract should briefly summarize the contents of the paper in
-150--250 words.
+  Detection of sharing is known challenge for implementers of embedded domain
+  specific languages (DSLs). There are many solutions, each with their
+  advantages and drawbacks. Many solutions are based on observable sharing, that
+  requires either a monadic interface or use of unsafe referencing, e.g.,
+  Data.Reify. Monadic interfaces are consider unsuitable for domain experts, and
+  the use of unsafe referencing leads to fragile software.
+
+  Kiselyov's methods for implicit and explicit sharing detection for finally
+  tagless style DSLs is an elegant solution without having to resort unsafe
+  observable sharing. However these methods are not applicable to all types of
+  DSLs (including those generating hypergraphs). We will present alternative
+  methods which handle these cases. The main difference comes from the use of a
+  trie to perform hashconsing. Our method for implicit sharing essentially
+  trades worst-case exponential growth in computation for increased memory
+  footprint. To mitigate this issue, our method for explicit sharing reduces the
+  memory footprint.
 
 \keywords{DSL  \and sharing \and common-subexpression elimination \and Haskell.}
 \end{abstract}
@@ -494,7 +508,7 @@ automate explicit sharing.
 \end{document}
 
 % LocalWords:  DSLs unsafePerformIO Haskell's AST typeclass tagless Trie
-% LocalWords:  Kiselyov's haskell consing
+% LocalWords:  Kiselyov's haskell consing hypergraphs
 % Local Variables:
 % LaTeX-verbatim-environments-local: ("minted")
 % eval: (setq-local LaTeX-indent-environment-list (cons '("minted" current-indentation) (default-value 'LaTeX-indent-environment-list)))
