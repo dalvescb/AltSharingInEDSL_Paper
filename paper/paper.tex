@@ -246,7 +246,12 @@ addChains x0 =
 \begin{figure}
   \centering
   \includegraphics[width=0.6\textwidth]{figs/hashconscmp.png}
-  \caption{Number of calls to \mintinline{haskell}{hashcons} plotted against the number of \mintinline{haskell}{add} operations performed.} \label{fig:hashcons}
+  \caption{Number of calls to \mintinline{haskell}{hashcons} plotted against the
+    number of \mintinline{haskell}{add} operations performed.
+    Hashcons is performed without explicit sharing and is clearly exponential,
+    Triecons (without explicit sharing) and HashCons Explicit (with explicit
+    sharing) overlap and are both linear
+  } \label{fig:hashcons}
 \end{figure}
 As shown in Fig.~\ref{fig:hashcons}, this code will perform approximately
 $2^{n+1}$ \mintinline{haskell}{hashcons} operations, where $n$ is the number of \mintinline{haskell}{add}s.
@@ -392,11 +397,11 @@ but at the expense of storing redundant byte strings.
 
 \subsection{Memory Limitations}
 The byte string AST being built will itself suffer from lack of sharing. We're
-essentially trading extra computation for extra memory. This is often a good
-tradeoff, since memory is so plentiful in modern hardware. But under the right
-conditions it can become an issue
-
-TODO include heap profiling analysis
+essentially trading extra computation for extra memory. In our same
+\mintinline{haskell}{addChains} example from Section \ref{limithashcons}, our
+method now has exponential scaling in memory instead of computation. This can be
+a good tradeoff, since memory is so plentiful in modern hardware, but still
+presents an issue.
 
 \section{Explicit Sharing Of ByteString ASTs}
 We propose another solution to this issue, taking inspiration again from the
@@ -463,6 +468,8 @@ the State monad to prevent or modify the substitution.
 In the toy example, compilation crashes, but we could catch an exception instead.
 Either way it's up to the DSL
 writer to insure they don't reuse the same label.
+
+\section{BenchMarking}
 
 \section{Conclusion}
 We have presented a method for constructing finally tagless style DSLs with

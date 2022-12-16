@@ -104,8 +104,11 @@ plotAddChains size =
   let
     chainsDataH = map (\(x,y) -> (fromIntegral x,fromIntegral y))
       [ (n,HCS.dagNumCons $ snd $ HCS.buildDAG $ HCS.addChains n $ HCS.variable "x") | n <- [0..size] ]
+    chainsDataHS = map (\(x,y) -> (fromIntegral x,fromIntegral y))
+      [ (n,HCS.dagNumCons $ snd $ HCS.buildDAG $ HCS.addChainsE n $ HCS.variable "x") | n <- [0..size] ]
     chainsDataT = map (\(x,y) -> (fromIntegral x,fromIntegral y))
       [ (n,dagNumCons $ snd $ buildDAG $ addChains n $ variable "x") | n <- [0..size] ]
   in plot (PNG "plot.png") [Data2D [Title "Triecons",Style Linespoints,Color Blue] [] chainsDataT
+                           ,Data2D [Title "Hashcons Explicit",Style Linespoints,Color Orange] [] chainsDataHS
                            ,Data2D [Title "Hashcons",Style Linespoints,Color Red] [] chainsDataH
                            ]
