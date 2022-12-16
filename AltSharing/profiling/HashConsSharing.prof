@@ -1,0 +1,89 @@
+	Fri Dec 16 02:48 2022 Time and Allocation Profiling Report  (Final)
+
+	   AltSharing-exe +RTS -N -xc -L350 -p -hT -RTS
+
+	total time  =        0.00 secs   (4 ticks @ 1000 us, 16 processors)
+	total alloc =   5,526,520 bytes  (excludes profiling overheads)
+
+COST CENTRE    MODULE          SRC                                      %time %alloc
+
+insert.bMap'   HashConsSharing src/HashConsSharing.hs:90:5-36            50.0   28.5
+hashcons       HashConsSharing src/HashConsSharing.hs:(118,1)-(125,22)   25.0    8.1
+main           Main            app/Main.hs:(12,1)-(15,24)                25.0   15.1
+MAIN           MAIN            <built-in>                                 0.0    4.3
+showsPrec      HashConsSharing src/HashConsSharing.hs:72:12-15            0.0   24.5
+let_           HashConsSharing src/HashConsSharing.hs:(144,3)-(145,54)    0.0    2.3
+hashcons.(...) HashConsSharing src/HashConsSharing.hs:122:20-38           0.0    4.1
+addChainsE     HashConsSharing src/HashConsSharing.hs:149:1-77            0.0    3.2
+add            HashConsSharing src/HashConsSharing.hs:(108,3)-(111,43)    0.0    4.9
+main.dag       Main            app/Main.hs:13:4-103                       0.0    2.9
+
+
+                                                                                                          individual      inherited
+COST CENTRE              MODULE                SRC                                     no.     entries  %time %alloc   %time %alloc
+
+MAIN                     MAIN                  <built-in>                              281           0    0.0    4.3   100.0  100.0
+ CAF                     GHC.Conc.Signal       <entire-module>                         398           0    0.0    0.0     0.0    0.0
+ CAF                     GHC.IO.Encoding       <entire-module>                         380           0    0.0    0.0     0.0    0.0
+ CAF                     GHC.IO.Encoding.Iconv <entire-module>                         378           0    0.0    0.0     0.0    0.0
+ CAF                     GHC.IO.Handle.FD      <entire-module>                         369           0    0.0    0.6     0.0    0.6
+ CAF                     GHC.IO.Handle.Text    <entire-module>                         367           0    0.0    0.0     0.0    0.0
+ CAF                     GHC.Event.Thread      <entire-module>                         323           0    0.0    0.0     0.0    0.0
+ CAF                     GHC.Event.Poll        <entire-module>                         302           0    0.0    0.0     0.0    0.0
+ CAF:$fShowNode4         HashConsSharing       <no location info>                      517           0    0.0    0.0     0.0    0.0
+ CAF:$fShowNode6         HashConsSharing       <no location info>                      519           0    0.0    0.0     0.0    0.0
+ CAF:empty               HashConsSharing       src/HashConsSharing.hs:95:1-5           499           0    0.0    0.0     0.0    0.0
+  empty                  HashConsSharing       src/HashConsSharing.hs:95:1-25          586           1    0.0    0.0     0.0    0.0
+ CAF:main1               Main                  <no location info>                      560           0    0.0    0.0     0.0    0.0
+  main                   Main                  app/Main.hs:(12,1)-(15,24)              562           1    0.0    0.0     0.0    0.0
+ CAF:main2               Main                  <no location info>                      559           0    0.0    0.0    25.0   41.9
+  main                   Main                  app/Main.hs:(12,1)-(15,24)              564           0   25.0   14.5    25.0   41.9
+   showsPrec             HashConsSharing       src/HashConsSharing.hs:72:12-15         608        2001    0.0   24.5     0.0   24.5
+   main.dag              Main                  app/Main.hs:13:4-103                    565           1    0.0    2.9     0.0    2.9
+    biMap                HashConsSharing       src/HashConsSharing.hs:76:24-28         566           1    0.0    0.0     0.0    0.0
+ CAF:main3               Main                  <no location info>                      556           0    0.0    0.0     0.0    0.0
+  main                   Main                  app/Main.hs:(12,1)-(15,24)              579           0    0.0    0.0     0.0    0.0
+   main.dag              Main                  app/Main.hs:13:4-103                    580           0    0.0    0.0     0.0    0.0
+    variable             HashConsSharing       src/HashConsSharing.hs:107:3-45         581           1    0.0    0.0     0.0    0.0
+     hashcons            HashConsSharing       src/HashConsSharing.hs:(118,1)-(125,22) 582           1    0.0    0.0     0.0    0.0
+ CAF:main_ds             Main                  <no location info>                      558           0    0.0    0.0     0.0    0.0
+  main                   Main                  app/Main.hs:(12,1)-(15,24)              567           0    0.0    0.0     0.0    0.0
+   main.dag              Main                  app/Main.hs:13:4-103                    568           0    0.0    0.0     0.0    0.0
+    dagMAP               HashConsSharing       src/HashConsSharing.hs:98:18-23         569           1    0.0    0.0     0.0    0.0
+ CAF:main_ds1            Main                  <no location info>                      557           0    0.0    0.0    75.0   52.6
+  main                   Main                  app/Main.hs:(12,1)-(15,24)              570           0    0.0    0.0    75.0   52.6
+   main.dag              Main                  app/Main.hs:13:4-103                    571           0    0.0    0.0    75.0   52.6
+    addChainsE           HashConsSharing       src/HashConsSharing.hs:149:1-77         575           1    0.0    3.2    75.0   52.6
+     addChainsE.\        HashConsSharing       src/HashConsSharing.hs:149:51-73        576        2000    0.0    0.0    75.0   49.4
+      let_               HashConsSharing       src/HashConsSharing.hs:(144,3)-(145,54) 577        2000    0.0    2.3    75.0   49.4
+       unGraph           HashConsSharing       src/HashConsSharing.hs:103:27-33        578        4000    0.0    0.0     0.0    0.0
+       addChainsE.\.\    HashConsSharing       src/HashConsSharing.hs:149:66-72        587        2000    0.0    0.0    75.0   47.1
+        add              HashConsSharing       src/HashConsSharing.hs:(108,3)-(111,43) 588        2000    0.0    4.9    75.0   47.1
+         unGraph         HashConsSharing       src/HashConsSharing.hs:103:27-33        589        4000    0.0    0.0     0.0    0.0
+         hashcons        HashConsSharing       src/HashConsSharing.hs:(118,1)-(125,22) 590        2000   25.0    8.1    75.0   42.1
+          hashcons.(...) HashConsSharing       src/HashConsSharing.hs:122:20-38        602        2000    0.0    4.1    50.0   33.2
+           insert        HashConsSharing       src/HashConsSharing.hs:(88,1)-(91,30)   603        2000    0.0    0.6    50.0   29.1
+            insert.bMap' HashConsSharing       src/HashConsSharing.hs:90:5-36          604        2000   50.0   28.5    50.0   28.5
+             compare     HashConsSharing       src/HashConsSharing.hs:72:20-22         605       25865    0.0    0.0     0.0    0.0
+          hashcons.\     HashConsSharing       src/HashConsSharing.hs:120:19-43        600        2000    0.0    0.0     0.0    0.0
+          hashcons.\     HashConsSharing       src/HashConsSharing.hs:123:35-53        599        2000    0.0    0.9     0.0    0.9
+          hashcons.m'    HashConsSharing       src/HashConsSharing.hs:122:20-38        601        2000    0.0    0.0     0.0    0.0
+          lookup_key     HashConsSharing       src/HashConsSharing.hs:83:1-55          593        2000    0.0    0.0     0.0    0.0
+           compare       HashConsSharing       src/HashConsSharing.hs:72:20-22         598       25865    0.0    0.0     0.0    0.0
+          hashcons.k     HashConsSharing       src/HashConsSharing.hs:122:20-38        606        1999    0.0    0.0     0.0    0.0
+    buildDAG             HashConsSharing       src/HashConsSharing.hs:113:1-47         572           1    0.0    0.0     0.0    0.0
+     unGraph             HashConsSharing       src/HashConsSharing.hs:103:27-33        573           1    0.0    0.0     0.0    0.0
+    variable             HashConsSharing       src/HashConsSharing.hs:107:3-45         583           0    0.0    0.0     0.0    0.0
+     hashcons            HashConsSharing       src/HashConsSharing.hs:(118,1)-(125,22) 584           0    0.0    0.0     0.0    0.0
+      hashcons.(...)     HashConsSharing       src/HashConsSharing.hs:122:20-38        595           1    0.0    0.0     0.0    0.0
+       insert            HashConsSharing       src/HashConsSharing.hs:(88,1)-(91,30)   596           1    0.0    0.0     0.0    0.0
+        insert.bMap'     HashConsSharing       src/HashConsSharing.hs:90:5-36          597           1    0.0    0.0     0.0    0.0
+      hashcons.\         HashConsSharing       src/HashConsSharing.hs:120:19-43        592           1    0.0    0.0     0.0    0.0
+      hashcons.\         HashConsSharing       src/HashConsSharing.hs:123:35-53        591           1    0.0    0.0     0.0    0.0
+      hashcons.k         HashConsSharing       src/HashConsSharing.hs:122:20-38        607           1    0.0    0.0     0.0    0.0
+      hashcons.m'        HashConsSharing       src/HashConsSharing.hs:122:20-38        594           1    0.0    0.0     0.0    0.0
+      lookup_key         HashConsSharing       src/HashConsSharing.hs:83:1-55          585           1    0.0    0.0     0.0    0.0
+ CAF:main_x              Main                  <no location info>                      555           0    0.0    0.0     0.0    0.0
+ CAF:n                   Main                  app/Main.hs:10:1                        554           0    0.0    0.0     0.0    0.0
+  n                      Main                  app/Main.hs:10:1-8                      574           1    0.0    0.0     0.0    0.0
+ main                    Main                  app/Main.hs:(12,1)-(15,24)              563           0    0.0    0.5     0.0    0.5

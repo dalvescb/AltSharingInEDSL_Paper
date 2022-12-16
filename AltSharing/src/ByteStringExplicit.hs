@@ -20,11 +20,11 @@ class Exp repr where
   constant :: Int -> repr Int
 
 -- | Explicit caching of ByteStrings
-class Cacheable repr where
-  cache :: ByteString -> repr a -> repr a
+class Substitute repr where
+  subT :: ByteString -> repr a -> repr a
 
-instance Cacheable Graph where
-  cache s' (Graph g s _) = Graph g s' (Just s)
+instance Substitute Graph where
+  subT s' (Graph g s _) = Graph g s' (Just s)
 
 -- | A node is identified by a unique Int
 type NodeID = Int
@@ -39,14 +39,14 @@ data Node = NAdd NodeID NodeID
 
 -- | A Directed Acyclic Graph is inside the values of the Trie
 data DAG = DAG { dagTrie :: Trie (Node,NodeID) -- | a trie from bytestrings to Node/NodeID
-               , dagCache :: Map ByteString ByteString -- | FIXME switch to Map?
-               , dagMaxID :: Int -- | used to track # of hashcons performed
+               , dagSubMap :: Map ByteString ByteString -- | a map of labels to their subst.
+               , dagMaxID :: Int -- | used to track # of triecons performed
                } deriving Show
 
 -- | DAG construction representation via the State monad
 data Graph a = Graph { unGraph :: State DAG NodeID
                      , unStringAST :: ByteString
-                     , unAddCache :: Maybe ByteString }
+                     , unSubT :: Maybe ByteString }
 
 -- | Build a AST encoded as a ByteString
 buildStringAST :: Node -> [ByteString] -> ByteString
@@ -60,9 +60,8 @@ buildStringAST node args =
   in opString <> argsString
 
 
--- TODO call me something different then hashcons?
-hashcons :: ByteString -> Node -> State DAG NodeID
-hashcons sAST node = do
+triecons :: ByteString -> Node -> State DAG NodeID
+triecons sAST node = do
  DAG trie dCache maxID <- get
  case Trie.lookup sAST trie of
    Nothing -> let maxID' = maxID+1
@@ -74,40 +73,43 @@ hashcons sAST node = do
 seqArgs :: [Graph a] -> State DAG [NodeID]
 seqArgs inps =
   let
-    seqArg (Graph sT sAST mCache) =
-      do DAG trie cacheMap _ <- get
-         runCache sAST mCache cacheMap
-         case Trie.lookup sAST trie of
-           Nothing -> sT
-           Just (_,nodeID) -> return nodeID
+    seqArg (Graph sT sAST mSubt) =
+      do DAG trie _ _ <- get
+         let sAST' = case mSubt of
+                       Just s -> s
+                       Nothing -> sAST
+         case Trie.lookup sAST' trie of
+           Nothing -> sT -- error "missing ast"
+           Just (node,nodeID) -> do subTInsert mSubt sAST (node,nodeID)
+                                    return nodeID
   in sequence $ map seqArg inps
 
-runCache :: ByteString -> Maybe ByteString -> Map ByteString ByteString -> State DAG ()
-runCache sAST mCache cacheMap = do
-  case mCache of
-    Nothing -> return ()
-    Just sAST0 ->
-      case Map.lookup sAST cacheMap of
-        Nothing -> let cacheMap' = Map.insert sAST sAST0 cacheMap
-                   in modify (\dag -> dag { dagCache = cacheMap' })
-        Just sAST1 -> if sAST1 == sAST0
-                         then return ()
-                         else error $ "attempted to recache: " ++ show sAST
+subTInsert :: Maybe ByteString -> ByteString -> (Node, NodeID) -> State DAG ()
+subTInsert Nothing  _ _  = return ()
+subTInsert (Just s) sAST nodeID =
+  do DAG trie subtMap _ <- get
+     case Map.lookup sAST subtMap of
+        Just sAST' -> if sAST == sAST'
+                      then return ()
+                      else error "tried to resubT"
+        Nothing -> let cMap' = Map.insert sAST s subtMap
+                       trie' = Trie.insert sAST nodeID trie
+                  in modify (\dag -> dag { dagTrie = trie', dagSubMap = cMap' })
 
 instance Exp Graph where
   constant x = let
     node = NConstant x
     sAST = buildStringAST node []
-    in Graph (hashcons sAST $ NConstant x) sAST Nothing
+    in Graph (triecons sAST $ NConstant x) sAST Nothing
   variable x = let
     node = NVariable x
     sAST = buildStringAST node []
-    in Graph (hashcons sAST $ NVariable x) sAST Nothing
+    in Graph (triecons sAST $ NVariable x) sAST Nothing
   add e1 e2 = let
       sAST = buildStringAST (NAdd undefined undefined) [unStringAST e1,unStringAST e2]
       sT = do ns <- seqArgs [e1,e2]
               case ns of
-                [n1,n2] -> hashcons sAST $ NAdd n1 n2
+                [n1,n2] -> triecons sAST $ NAdd n1 n2
                 _ -> error "black magic"
     in Graph sT sAST Nothing
 
@@ -115,8 +117,8 @@ buildDAG g = runState (unGraph g) (DAG Trie.empty Map.empty 0)
 
 
 -- | Example of exponential scale of hash-consing
-addChains :: (Exp repr,Cacheable repr) => Int -> repr Int -> repr Int
+addChains :: (Exp repr,Substitute repr) => Int -> repr Int -> repr Int
 addChains n x0 = fst
                  $ head
                  $ drop n
-                 $ iterate (\(x,i) -> (cache ("add"<>(ByteString.pack $ show i)) (add x x),i+1)) (x0,0)
+                 $ iterate (\(x,i) -> (subT ("add"<>(ByteString.pack $ show i)) (add x x),i+1)) (x0,0)

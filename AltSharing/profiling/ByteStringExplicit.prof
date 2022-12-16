@@ -1,0 +1,217 @@
+	Fri Dec 16 02:49 2022 Time and Allocation Profiling Report  (Final)
+
+	   AltSharing-exe +RTS -N -xc -L350 -p -hT -RTS
+
+	total time  =        0.01 secs   (27 ticks @ 1000 us, 16 processors)
+	total alloc =  24,379,976 bytes  (excludes profiling overheads)
+
+COST CENTRE               MODULE                        SRC                                                     %time %alloc
+
+MAIN                      MAIN                          <built-in>                                               22.2    1.0
+alterBy_.go               Data.Trie.Internal            src/Data/Trie/Internal.hs:(1971,5)-(1999,45)             14.8   11.0
+breakMaximalPrefix        Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(136,1)-(156,44)    11.1   13.8
+subtInsert.cMap'          ByteStringExplicit            src/ByteStringExplicit.hs:95:24-56                       11.1    6.5
+addChains.\               ByteStringExplicit            src/ByteStringExplicit.hs:124:39-95                       7.4    4.0
+lookupBy_.go.findArc      Data.Trie.Internal            src/Data/Trie/Internal.hs:(1733,9)-(1738,41)              3.7    0.0
+foldr.go                  Data.Trie.Internal            src/Data/Trie/Internal.hs:(1350,9)-(1353,43)              3.7    1.4
+alterBy_.go.qh            Data.Trie.Internal            src/Data/Trie/Internal.hs:1979:15-44                      3.7    0.0
+showsPrec                 ByteStringExplicit            src/ByteStringExplicit.hs:37:12-15                        3.7   11.1
+seqArgs                   ByteStringExplicit            src/ByteStringExplicit.hs:(74,1)-(85,31)                  3.7    2.2
+buildStringAST.argsString ByteStringExplicit            src/ByteStringExplicit.hs:59:5-76                         3.7    4.4
+buildStringAST            ByteStringExplicit            src/ByteStringExplicit.hs:(53,1)-(60,27)                  3.7    1.3
+addChains                 ByteStringExplicit            src/ByteStringExplicit.hs:(121,1)-(124,103)               3.7    1.5
+main                      Main                          app/Main.hs:(12,1)-(15,24)                                3.7    6.8
+indexOfDifference         Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(230,1)-(239,29)     0.0    8.8
+breakMaximalPrefix.i.\.\  Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(145,17)-(148,37)    0.0    5.1
+lookupBy_.go.qh           Data.Trie.Internal            src/Data/Trie/Internal.hs:1729:9-39                       0.0    1.4
+lookupBy_.go              Data.Trie.Internal            src/Data/Trie/Internal.hs:(1716,5)-(1738,41)              0.0    5.8
+alterBy_.nothing          Data.Trie.Internal            src/Data/Trie/Internal.hs:1969:5-42                       0.0    1.2
+alterBy_                  Data.Trie.Internal            src/Data/Trie/Internal.hs:(1962,1)-(1999,45)              0.0    1.1
+alterBy                   Data.Trie.Internal            src/Data/Trie/Internal.hs:1940:1-51                       0.0    1.1
+triecons                  ByteStringExplicit            src/ByteStringExplicit.hs:(64,1)-(71,35)                  0.0    1.1
+subtInsert                ByteStringExplicit            src/ByteStringExplicit.hs:(88,1)-(97,80)                  0.0    2.2
+seqArgs.seqArg            ByteStringExplicit            src/ByteStringExplicit.hs:(76,5)-(84,49)                  0.0    2.2
+add.sT                    ByteStringExplicit            src/ByteStringExplicit.hs:(110,7)-(113,40)                0.0    1.2
+
+
+                                                                                                                                                       individual      inherited
+COST CENTRE                                    MODULE                        SRC                                                    no.     entries  %time %alloc   %time %alloc
+
+MAIN                                           MAIN                          <built-in>                                             318           0   22.2    1.0   100.0  100.0
+ CAF                                           GHC.Conc.Signal               <entire-module>                                        437           0    0.0    0.0     0.0    0.0
+ CAF                                           GHC.IO.Encoding               <entire-module>                                        418           0    0.0    0.0     0.0    0.0
+ CAF                                           GHC.IO.Encoding.Iconv         <entire-module>                                        416           0    0.0    0.0     0.0    0.0
+ CAF                                           GHC.IO.Handle.FD              <entire-module>                                        408           0    0.0    0.1     0.0    0.1
+ CAF                                           GHC.IO.Handle.Text            <entire-module>                                        406           0    0.0    0.0     0.0    0.0
+ CAF                                           GHC.Event.Thread              <entire-module>                                        361           0    0.0    0.0     0.0    0.0
+ CAF                                           GHC.Event.Poll                <entire-module>                                        340           0    0.0    0.0     0.0    0.0
+ CAF:$fExpGraph2                               ByteStringExplicit            <no location info>                                     591           0    0.0    0.0     0.0    0.0
+  triecons                                     ByteStringExplicit            src/ByteStringExplicit.hs:(64,1)-(71,35)               683           0    0.0    0.0     0.0    0.0
+   lookupBy_                                   Data.Trie.Internal            src/Data/Trie/Internal.hs:(1710,1)-(1738,41)           684           1    0.0    0.0     0.0    0.0
+ CAF:$fShowNode4                               ByteStringExplicit            <no location info>                                     576           0    0.0    0.0     0.0    0.0
+ CAF:$fShowNode6                               ByteStringExplicit            <no location info>                                     577           0    0.0    0.0     0.0    0.0
+ CAF:buildStringAST9                           ByteStringExplicit            <no location info>                                     584           0    0.0    0.0     0.0    0.0
+  buildStringAST                               ByteStringExplicit            src/ByteStringExplicit.hs:(53,1)-(60,27)               703           0    0.0    0.0     0.0    0.0
+   buildStringAST.argsString                   ByteStringExplicit            src/ByteStringExplicit.hs:59:5-76                      704           0    0.0    0.0     0.0    0.0
+ CAF:lvl1_r3pf                                 ByteStringExplicit            <no location info>                                     590           0    0.0    0.0     0.0    0.0
+  seqArgs.seqArg                               ByteStringExplicit            src/ByteStringExplicit.hs:(76,5)-(84,49)               666           0    0.0    0.0     0.0    0.0
+   lookupBy_                                   Data.Trie.Internal            src/Data/Trie/Internal.hs:(1710,1)-(1738,41)           667           1    0.0    0.0     0.0    0.0
+ CAF:main1                                     Main                          <no location info>                                     634           0    0.0    0.0     0.0    0.0
+  main                                         Main                          app/Main.hs:(12,1)-(15,24)                             636           1    0.0    0.0     0.0    0.0
+ CAF:main2                                     Main                          <no location info>                                     633           0    0.0    0.0    11.1   19.1
+  main                                         Main                          app/Main.hs:(12,1)-(15,24)                             638           0    3.7    6.6    11.1   19.1
+   showsPrec                                   ByteStringExplicit            src/ByteStringExplicit.hs:37:12-15                     787        4000    3.7   11.1     3.7   11.1
+   main.dag                                    Main                          app/Main.hs:14:4-92                                    639           1    0.0    0.0     3.7    1.4
+    foldr                                      Data.Trie.Internal            src/Data/Trie/Internal.hs:(1348,5)-(1353,43)           640           1    0.0    0.0     3.7    1.4
+     foldr.\                                   Data.Trie.Internal            src/Data/Trie/Internal.hs:1348:24-30                   641           1    0.0    0.0     3.7    1.4
+      foldr.go                                 Data.Trie.Internal            src/Data/Trie/Internal.hs:(1350,9)-(1353,43)           642       11803    3.7    1.4     3.7    1.4
+ CAF:main3                                     Main                          <no location info>                                     629           0    0.0    0.0     0.0    0.0
+  main                                         Main                          app/Main.hs:(12,1)-(15,24)                             671           0    0.0    0.0     0.0    0.0
+   main.dag                                    Main                          app/Main.hs:14:4-92                                    672           0    0.0    0.0     0.0    0.0
+    variable                                   ByteStringExplicit            src/ByteStringExplicit.hs:(104,3)-(107,55)             673           1    0.0    0.0     0.0    0.0
+ CAF:main5                                     Main                          <no location info>                                     628           0    0.0    0.0     0.0    0.0
+  main                                         Main                          app/Main.hs:(12,1)-(15,24)                             674           0    0.0    0.0     0.0    0.0
+   main.dag                                    Main                          app/Main.hs:14:4-92                                    675           0    0.0    0.0     0.0    0.0
+    variable                                   ByteStringExplicit            src/ByteStringExplicit.hs:(104,3)-(107,55)             676           0    0.0    0.0     0.0    0.0
+ CAF:main6                                     Main                          <no location info>                                     627           0    0.0    0.0     0.0    0.0
+  main                                         Main                          app/Main.hs:(12,1)-(15,24)                             677           0    0.0    0.0     0.0    0.0
+   main.dag                                    Main                          app/Main.hs:14:4-92                                    678           0    0.0    0.0     0.0    0.0
+    variable                                   ByteStringExplicit            src/ByteStringExplicit.hs:(104,3)-(107,55)             679           0    0.0    0.0     0.0    0.0
+     triecons                                  ByteStringExplicit            src/ByteStringExplicit.hs:(64,1)-(71,35)               680           1    0.0    0.0     0.0    0.0
+ CAF:main_ds                                   Main                          <no location info>                                     631           0    0.0    0.0    48.1   63.1
+  main                                         Main                          app/Main.hs:(12,1)-(15,24)                             646           0    0.0    0.0    48.1   63.1
+   main.dag                                    Main                          app/Main.hs:14:4-92                                    647           0    0.0    0.0    48.1   63.1
+    buildDAG                                   ByteStringExplicit            src/ByteStringExplicit.hs:116:1-62                     648           1    0.0    0.0     0.0    0.0
+     unGraph                                   ByteStringExplicit            src/ByteStringExplicit.hs:47:24-30                     649           1    0.0    0.0     0.0    0.0
+    addChains                                  ByteStringExplicit            src/ByteStringExplicit.hs:(121,1)-(124,103)            658           0    0.0    0.0    48.1   63.1
+     addChains.\                               ByteStringExplicit            src/ByteStringExplicit.hs:124:39-95                    659           0    0.0    0.0    48.1   63.1
+      add                                      ByteStringExplicit            src/ByteStringExplicit.hs:(108,3)-(114,28)             660           0    0.0    0.0    48.1   63.1
+       add.sT                                  ByteStringExplicit            src/ByteStringExplicit.hs:(110,7)-(113,40)             661           0    0.0    0.4    48.1   63.1
+        triecons                               ByteStringExplicit            src/ByteStringExplicit.hs:(64,1)-(71,35)               721        2000    0.0    1.1    22.2   28.1
+         triecons.trie'                        ByteStringExplicit            src/ByteStringExplicit.hs:68:19-62                     739        2000    0.0    0.7     7.4   16.0
+          alterBy                              Data.Trie.Internal            src/Data/Trie/Internal.hs:1940:1-51                    740        2000    0.0    0.6     7.4   15.3
+           alterBy_                            Data.Trie.Internal            src/Data/Trie/Internal.hs:(1962,1)-(1999,45)           741        2000    0.0    0.5     7.4   14.7
+            alterBy_.start                     Data.Trie.Internal            src/Data/Trie/Internal.hs:(1964,5)-(1966,69)           742        2000    0.0    0.0     7.4   14.0
+             alterBy_.go                       Data.Trie.Internal            src/Data/Trie/Internal.hs:(1971,5)-(1999,45)           743       40518    7.4    6.2     7.4   14.0
+              alterBy_.go.qh                   Data.Trie.Internal            src/Data/Trie/Internal.hs:1979:15-44                   784       30635    0.0    0.0     0.0    0.0
+               errorLogHead                    Data.Trie.Internal            src/Data/Trie/Internal.hs:(525,1)-(527,33)             785       30635    0.0    0.0     0.0    0.0
+              alterBy_.go.(...)                Data.Trie.Internal            src/Data/Trie/Internal.hs:1981:13-46                   745        9883    0.0    0.3     0.0    7.4
+               breakMaximalPrefix              Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(136,1)-(156,44)  746        9883    0.0    3.5     0.0    7.2
+                breakMaximalPrefix.i           Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(142,13)-(148,37) 747        9883    0.0    0.0     0.0    3.6
+                 breakMaximalPrefix.i.\        Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(144,17)-(148,37) 748        9883    0.0    0.0     0.0    3.6
+                  breakMaximalPrefix.i.\.\     Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(145,17)-(148,37) 749        9883    0.0    1.3     0.0    3.6
+                   indexOfDifference           Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(230,1)-(239,29)  750        9883    0.0    2.3     0.0    2.3
+                    indexOfDifference.goByte   Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(232,5)-(239,29)  751       30759    0.0    0.1     0.0    0.1
+              alterBy_.go.k'                   Data.Trie.Internal            src/Data/Trie/Internal.hs:1981:13-46                   744        9883    0.0    0.0     0.0    0.0
+              alterBy_.go.q'                   Data.Trie.Internal            src/Data/Trie/Internal.hs:1981:13-46                   752        9883    0.0    0.0     0.0    0.0
+              alterBy_.nothing                 Data.Trie.Internal            src/Data/Trie/Internal.hs:1969:5-42                    753        2000    0.0    0.4     0.0    0.4
+              alterBy_.go.p                    Data.Trie.Internal            src/Data/Trie/Internal.hs:1981:13-46                   756        1200    0.0    0.0     0.0    0.0
+            alterBy_.nothing                   Data.Trie.Internal            src/Data/Trie/Internal.hs:1969:5-42                    754           0    0.0    0.2     0.0    0.2
+             alterBy.\                         Data.Trie.Internal            src/Data/Trie/Internal.hs:1940:36-48                   755        2000    0.0    0.0     0.0    0.0
+         triecons.maxID'                       ByteStringExplicit            src/ByteStringExplicit.hs:67:19-34                     789        1999    0.0    0.1     0.0    0.1
+         lookupBy_                             Data.Trie.Internal            src/Data/Trie/Internal.hs:(1710,1)-(1738,41)           722           0    0.0    0.0    14.8   10.9
+          lookupBy_.go                         Data.Trie.Internal            src/Data/Trie/Internal.hs:(1716,5)-(1738,41)           724       20565    0.0    2.8    14.8   10.9
+           lookupBy_.go.findArc                Data.Trie.Internal            src/Data/Trie/Internal.hs:(1733,9)-(1738,41)           781       40517    3.7    0.0     3.7    0.0
+           lookupBy_.go.qh                     Data.Trie.Internal            src/Data/Trie/Internal.hs:1729:9-39                    782       10682    0.0    0.7     0.0    0.7
+            errorLogHead                       Data.Trie.Internal            src/Data/Trie/Internal.hs:(525,1)-(527,33)             783       10682    0.0    0.0     0.0    0.0
+           lookupBy_.go.(...)                  Data.Trie.Internal            src/Data/Trie/Internal.hs:1718:13-48                   726        9883    0.0    0.3    11.1    7.4
+            breakMaximalPrefix                 Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(136,1)-(156,44)  732        9883   11.1    3.5    11.1    7.2
+             breakMaximalPrefix.i              Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(142,13)-(148,37) 733        9883    0.0    0.0     0.0    3.6
+              breakMaximalPrefix.i.\           Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(144,17)-(148,37) 734        9883    0.0    0.0     0.0    3.6
+               breakMaximalPrefix.i.\.\        Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(145,17)-(148,37) 735        9883    0.0    1.3     0.0    3.6
+                indexOfDifference              Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(230,1)-(239,29)  736        9883    0.0    2.3     0.0    2.3
+                 indexOfDifference.goByte      Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(232,5)-(239,29)  737       30759    0.0    0.1     0.0    0.1
+           lookupBy_.go.k'                     Data.Trie.Internal            src/Data/Trie/Internal.hs:1718:13-48                   725        9883    0.0    0.0     0.0    0.0
+           lookupBy_.go.q'                     Data.Trie.Internal            src/Data/Trie/Internal.hs:1718:13-48                   738        9883    0.0    0.0     0.0    0.0
+          lookupBy_.start                      Data.Trie.Internal            src/Data/Trie/Internal.hs:(1713,5)-(1714,44)           723        2000    0.0    0.0     0.0    0.0
+        seqArgs                                ByteStringExplicit            src/ByteStringExplicit.hs:(74,1)-(85,31)               663           0    3.7    1.0    25.9   34.7
+         seqArgs.seqArg                        ByteStringExplicit            src/ByteStringExplicit.hs:(76,5)-(84,49)               665           0    0.0    1.1    22.2   33.7
+          seqArgs.seqArg.sAST'                 ByteStringExplicit            src/ByteStringExplicit.hs:(78,14)-(80,38)              711        2000    0.0    0.0     0.0    0.0
+          subtInsert                           ByteStringExplicit            src/ByteStringExplicit.hs:(88,1)-(97,80)               720        2000    0.0    2.2    22.2   21.0
+           subtInsert.\                        ByteStringExplicit            src/ByteStringExplicit.hs:97:38-79                     760        1999    0.0    0.0     0.0    0.0
+           subtInsert.trie'                    ByteStringExplicit            src/ByteStringExplicit.hs:96:24-59                     761        1999    0.0    0.0    11.1   12.3
+            alterBy                            Data.Trie.Internal            src/Data/Trie/Internal.hs:1940:1-51                    762        1999    0.0    0.5    11.1   12.3
+             alterBy_                          Data.Trie.Internal            src/Data/Trie/Internal.hs:(1962,1)-(1999,45)           763        1999    0.0    0.5    11.1   11.8
+              alterBy_.start                   Data.Trie.Internal            src/Data/Trie/Internal.hs:(1964,5)-(1966,69)           764        1999    0.0    0.0    11.1   11.1
+               alterBy_.go                     Data.Trie.Internal            src/Data/Trie/Internal.hs:(1971,5)-(1999,45)           765       32031    7.4    4.8    11.1   11.1
+                alterBy_.go.qh                 Data.Trie.Internal            src/Data/Trie/Internal.hs:1979:15-44                   766       23948    3.7    0.0     3.7    0.0
+                 errorLogHead                  Data.Trie.Internal            src/Data/Trie/Internal.hs:(525,1)-(527,33)             767       23948    0.0    0.0     0.0    0.0
+                alterBy_.go.(...)              Data.Trie.Internal            src/Data/Trie/Internal.hs:1981:13-46                   769        7884    0.0    0.3     0.0    5.9
+                 breakMaximalPrefix            Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(136,1)-(156,44)  770        7884    0.0    2.7     0.0    5.6
+                  breakMaximalPrefix.i         Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(142,13)-(148,37) 771        7884    0.0    0.0     0.0    2.9
+                   breakMaximalPrefix.i.\      Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(144,17)-(148,37) 772        7884    0.0    0.0     0.0    2.9
+                    breakMaximalPrefix.i.\.\   Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(145,17)-(148,37) 773        7884    0.0    1.0     0.0    2.9
+                     indexOfDifference         Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(230,1)-(239,29)  774        7884    0.0    1.8     0.0    1.9
+                      indexOfDifference.goByte Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(232,5)-(239,29)  775       18765    0.0    0.1     0.0    0.1
+                alterBy_.go.k'                 Data.Trie.Internal            src/Data/Trie/Internal.hs:1981:13-46                   768        7884    0.0    0.0     0.0    0.0
+                alterBy_.go.q'                 Data.Trie.Internal            src/Data/Trie/Internal.hs:1981:13-46                   776        7884    0.0    0.0     0.0    0.0
+                alterBy_.nothing               Data.Trie.Internal            src/Data/Trie/Internal.hs:1969:5-42                    777        1999    0.0    0.4     0.0    0.4
+                alterBy_.go.p                  Data.Trie.Internal            src/Data/Trie/Internal.hs:1981:13-46                   780        1000    0.0    0.0     0.0    0.0
+              alterBy_.nothing                 Data.Trie.Internal            src/Data/Trie/Internal.hs:1969:5-42                    778           0    0.0    0.2     0.0    0.2
+               alterBy.\                       Data.Trie.Internal            src/Data/Trie/Internal.hs:1940:36-48                   779        1999    0.0    0.0     0.0    0.0
+           subtInsert.cMap'                    ByteStringExplicit            src/ByteStringExplicit.hs:95:24-56                     786        1998   11.1    6.5    11.1    6.5
+          lookupBy_                            Data.Trie.Internal            src/Data/Trie/Internal.hs:(1710,1)-(1738,41)           668           0    0.0    0.0     0.0   11.6
+           lookupBy_.go                        Data.Trie.Internal            src/Data/Trie/Internal.hs:(1716,5)-(1738,41)           670       23757    0.0    3.0     0.0   11.6
+            lookupBy_.go.findArc               Data.Trie.Internal            src/Data/Trie/Internal.hs:(1733,9)-(1738,41)           757       42698    0.0    0.0     0.0    0.0
+            lookupBy_.go.(...)                 Data.Trie.Internal            src/Data/Trie/Internal.hs:1718:13-48                   710       10879    0.0    0.0     0.0    7.9
+             breakMaximalPrefix                Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(136,1)-(156,44)  713       10879    0.0    4.0     0.0    7.9
+              breakMaximalPrefix.i             Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(142,13)-(148,37) 714       10879    0.0    0.0     0.0    3.9
+               breakMaximalPrefix.i.\          Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(144,17)-(148,37) 715       10879    0.0    0.0     0.0    3.9
+                breakMaximalPrefix.i.\.\       Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(145,17)-(148,37) 716       10879    0.0    1.4     0.0    3.9
+                 indexOfDifference             Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(230,1)-(239,29)  717       10879    0.0    2.5     0.0    2.5
+                  indexOfDifference.goByte     Data.Trie.Internal.ByteString src/Data/Trie/Internal/ByteString.hs:(232,5)-(239,29)  718       50636    0.0    0.0     0.0    0.0
+            lookupBy_.go.k'                    Data.Trie.Internal            src/Data/Trie/Internal.hs:1718:13-48                   709       10879    0.0    0.0     0.0    0.0
+            lookupBy_.go.q'                    Data.Trie.Internal            src/Data/Trie/Internal.hs:1718:13-48                   719       10879    0.0    0.0     0.0    0.0
+            lookupBy_.go.qh                    Data.Trie.Internal            src/Data/Trie/Internal.hs:1729:9-39                    758       10878    0.0    0.7     0.0    0.7
+             errorLogHead                      Data.Trie.Internal            src/Data/Trie/Internal.hs:(525,1)-(527,33)             759       10878    0.0    0.0     0.0    0.0
+           lookupBy_.start                     Data.Trie.Internal            src/Data/Trie/Internal.hs:(1713,5)-(1714,44)           669        4000    0.0    0.0     0.0    0.0
+    variable                                   ByteStringExplicit            src/ByteStringExplicit.hs:(104,3)-(107,55)             681           0    0.0    0.0     0.0    0.0
+     triecons                                  ByteStringExplicit            src/ByteStringExplicit.hs:(64,1)-(71,35)               682           0    0.0    0.0     0.0    0.0
+      triecons.maxID'                          ByteStringExplicit            src/ByteStringExplicit.hs:67:19-34                     788           1    0.0    0.0     0.0    0.0
+      triecons.trie'                           ByteStringExplicit            src/ByteStringExplicit.hs:68:19-62                     688           1    0.0    0.0     0.0    0.0
+       alterBy                                 Data.Trie.Internal            src/Data/Trie/Internal.hs:1940:1-51                    689           1    0.0    0.0     0.0    0.0
+        alterBy_                               Data.Trie.Internal            src/Data/Trie/Internal.hs:(1962,1)-(1999,45)           690           1    0.0    0.0     0.0    0.0
+         alterBy_.start                        Data.Trie.Internal            src/Data/Trie/Internal.hs:(1964,5)-(1966,69)           691           1    0.0    0.0     0.0    0.0
+          alterBy_.go                          Data.Trie.Internal            src/Data/Trie/Internal.hs:(1971,5)-(1999,45)           705           1    0.0    0.0     0.0    0.0
+           alterBy_.nothing                    Data.Trie.Internal            src/Data/Trie/Internal.hs:1969:5-42                    706           1    0.0    0.0     0.0    0.0
+         alterBy_.nothing                      Data.Trie.Internal            src/Data/Trie/Internal.hs:1969:5-42                    707           0    0.0    0.0     0.0    0.0
+          alterBy.\                            Data.Trie.Internal            src/Data/Trie/Internal.hs:1940:36-48                   708           1    0.0    0.0     0.0    0.0
+      lookupBy_                                Data.Trie.Internal            src/Data/Trie/Internal.hs:(1710,1)-(1738,41)           685           0    0.0    0.0     0.0    0.0
+       lookupBy_.go                            Data.Trie.Internal            src/Data/Trie/Internal.hs:(1716,5)-(1738,41)           687           1    0.0    0.0     0.0    0.0
+       lookupBy_.start                         Data.Trie.Internal            src/Data/Trie/Internal.hs:(1713,5)-(1714,44)           686           1    0.0    0.0     0.0    0.0
+ CAF:main_g                                    Main                          <no location info>                                     630           0    0.0    0.0    18.5   16.4
+  main                                         Main                          app/Main.hs:(12,1)-(15,24)                             650           0    0.0    0.0    18.5   16.4
+   main.dag                                    Main                          app/Main.hs:14:4-92                                    651           0    0.0    0.0    18.5   16.4
+    addChains                                  ByteStringExplicit            src/ByteStringExplicit.hs:(121,1)-(124,103)            653           1    3.7    1.5    18.5   16.4
+     addChains.\                               ByteStringExplicit            src/ByteStringExplicit.hs:124:39-95                    654        2000    7.4    4.0    14.8   14.9
+      add                                      ByteStringExplicit            src/ByteStringExplicit.hs:(108,3)-(114,28)             656        2000    0.0    0.9     7.4   10.5
+       add.sAST                                ByteStringExplicit            src/ByteStringExplicit.hs:109:7-86                     727        2000    0.0    0.8     7.4    6.4
+        unStringAST                            ByteStringExplicit            src/ByteStringExplicit.hs:48:24-34                     731        4000    0.0    0.0     0.0    0.0
+        buildStringAST                         ByteStringExplicit            src/ByteStringExplicit.hs:(53,1)-(60,27)               728        2000    3.7    1.3     7.4    5.6
+         buildStringAST.argsString             ByteStringExplicit            src/ByteStringExplicit.hs:59:5-76                      730        2000    3.7    4.4     3.7    4.4
+         buildStringAST.opString               ByteStringExplicit            src/ByteStringExplicit.hs:(55,5)-(58,65)               729        2000    0.0    0.0     0.0    0.0
+       add.sT                                  ByteStringExplicit            src/ByteStringExplicit.hs:(110,7)-(113,40)             657        2000    0.0    0.9     0.0    3.2
+        seqArgs                                ByteStringExplicit            src/ByteStringExplicit.hs:(74,1)-(85,31)               662        2000    0.0    1.2     0.0    2.4
+         seqArgs.seqArg                        ByteStringExplicit            src/ByteStringExplicit.hs:(76,5)-(84,49)               664        4000    0.0    1.2     0.0    1.2
+      cache                                    ByteStringExplicit            src/ByteStringExplicit.hs:27:3-46                      655        2000    0.0    0.4     0.0    0.4
+ CAF:main_node                                 Main                          <no location info>                                     625           0    0.0    0.0     0.0    0.0
+  main                                         Main                          app/Main.hs:(12,1)-(15,24)                             698           0    0.0    0.0     0.0    0.0
+   main.dag                                    Main                          app/Main.hs:14:4-92                                    699           0    0.0    0.0     0.0    0.0
+    variable                                   ByteStringExplicit            src/ByteStringExplicit.hs:(104,3)-(107,55)             700           0    0.0    0.0     0.0    0.0
+     variable.node                             ByteStringExplicit            src/ByteStringExplicit.hs:105:5-22                     701           1    0.0    0.0     0.0    0.0
+ CAF:main_sAST                                 Main                          <no location info>                                     626           0    0.0    0.0     0.0    0.0
+  main                                         Main                          app/Main.hs:(12,1)-(15,24)                             692           0    0.0    0.0     0.0    0.0
+   main.dag                                    Main                          app/Main.hs:14:4-92                                    693           0    0.0    0.0     0.0    0.0
+    variable                                   ByteStringExplicit            src/ByteStringExplicit.hs:(104,3)-(107,55)             694           0    0.0    0.0     0.0    0.0
+     variable.sAST                             ByteStringExplicit            src/ByteStringExplicit.hs:106:5-33                     695           1    0.0    0.0     0.0    0.0
+      buildStringAST                           ByteStringExplicit            src/ByteStringExplicit.hs:(53,1)-(60,27)               696           1    0.0    0.0     0.0    0.0
+       buildStringAST.argsString               ByteStringExplicit            src/ByteStringExplicit.hs:59:5-76                      702           1    0.0    0.0     0.0    0.0
+       buildStringAST.opString                 ByteStringExplicit            src/ByteStringExplicit.hs:(55,5)-(58,65)               697           1    0.0    0.0     0.0    0.0
+ CAF:main_t1                                   Main                          <no location info>                                     632           0    0.0    0.0     0.0    0.0
+  main                                         Main                          app/Main.hs:(12,1)-(15,24)                             643           0    0.0    0.0     0.0    0.0
+   main.dag                                    Main                          app/Main.hs:14:4-92                                    644           0    0.0    0.0     0.0    0.0
+    dagTrie                                    ByteStringExplicit            src/ByteStringExplicit.hs:41:18-24                     645           1    0.0    0.0     0.0    0.0
+ CAF:main_x                                    Main                          <no location info>                                     624           0    0.0    0.0     0.0    0.0
+ CAF:n                                         Main                          app/Main.hs:10:1                                       623           0    0.0    0.0     0.0    0.0
+  n                                            Main                          app/Main.hs:10:1-8                                     652           1    0.0    0.0     0.0    0.0
+ main                                          Main                          app/Main.hs:(12,1)-(15,24)                             637           0    0.0    0.2     0.0    0.2

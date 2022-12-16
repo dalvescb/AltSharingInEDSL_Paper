@@ -245,7 +245,7 @@ addChains x0 =
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.6\textwidth]{figs/hashcons.png}
+  \includegraphics[width=0.6\textwidth]{figs/hashconscmp.png}
   \caption{Number of calls to \mintinline{haskell}{hashcons} plotted against the number of \mintinline{haskell}{add} operations performed.} \label{fig:hashcons}
 \end{figure}
 As shown in Fig.~\ref{fig:hashcons}, this code will perform approximately
@@ -406,48 +406,58 @@ more compact label. For safety purposes, we need to keep track of a table of
 these labels and their corresponding ASTs, to make sure we don't use the same label for different ASTs.
 \begin{minted}{haskell}
 data DAG = DAG { dagTrie :: Trie (Node,NodeID)
-               , dagCacheMap :: Map ByteString ByteString
-               , maxID  :: NodeID
+               , dagSubMap :: Map ByteString ByteString
+               , dagMaxID :: Int
                } deriving Show
 
 data Graph a = Graph { unGraph :: State DAG NodeID
-                     , stringAST :: ByteString
-                     , addCache :: Maybe ByteString }
+                     , unStringAST :: ByteString
+                     , unSubT :: Maybe ByteString }
 
-class Cacheable repr where
-  cache :: ByteString -> repr ByteString -> repr ByteString
-instance Cacheable Graph where
-  cache s' (Graph g s _) = Graph g s' (Just s)
+class Substitute repr where
+  subT :: ByteString -> repr a -> repr a
+instance Substitute Graph where
+  subT s' (Graph g s _) = Graph g s' (Just s)
 
 test x y = let
-  z = cache "z" (add x y)
+  z = subT "z" (add x y)
   in add z z
 \end{minted}
 
-The cache operation replaces the current byte string AST with a new label, and
-we define a new operation \mintinline{haskell}{runCache} to check if
+The \mintinline{haskell}{subT} operation substitutes the current byte string AST with a new one, and
+we define a new operation \mintinline{haskell}{subTInsert} to check if
 the label already exists in the cache map before inserting it.
 \begin{minted}{haskell}
-runCache sAST mAddCache cacheMap = do
-  case mAddCache of
-    Nothing -> return ()
-    Just sAST0 ->
-      case Map.lookup sAST cacheMap of
-        Nothing -> let cacheMap' = insert sAST sAST0 cacheMap
-                   in modify (\dag -> dag { dagCache = cacheMap' })
-        Just sAST1 ->
-            if sAST1 == sAST0
-               then return ()
-               else error $ "attempted to recache: " ++ show sAST
-
+seqArgs :: [Graph a] -> State DAG [NodeID]
 seqArgs inps =
   let
-    seqArg (Graph sT sAST mCache) =
-      do DAG trie cacheMap _ <- get
-         runCache sAST mCache cacheMap
-         ...
+    seqArg (Graph sT sAST mSubt) =
+      do DAG trie _ _ <- get
+         let sAST' = case mSubt of
+                       Just s -> s
+                       Nothing -> sAST
+         case Trie.lookup sAST' trie of
+           Nothing -> sT -- error "missing ast"
+           Just (node,nodeID) ->
+              do subTInsert mSubt sAST (node,nodeID)
+                 return nodeID
+  in sequence $ map seqArg inps
+
+subTInsert :: Maybe ByteString -> ByteString
+           -> (Node, NodeID) -> State DAG ()
+subTInsert Nothing  _ _  = return ()
+subTInsert (Just s) sAST nodeID =
+  do DAG trie subtMap _ <- get
+     case Map.lookup sAST subtMap of
+        Just sAST' -> if sAST == sAST'
+                      then return ()
+                      else error "tried to resubT"
+        Nothing -> let cMap' = Map.insert sAST s subtMap
+                       trie' = Trie.insert sAST nodeID trie
+                  in modify (\dag -> dag { dagTrie = trie'
+                                      , dagSubMap = cMap' })
 \end{minted}
-We need to make sure we don't attempt to insert the same cache label for two
+We need to make sure we don't attempt to insert the same substitution for two
 different ASTs. Unfortunately, if there is a collision there's no way to escape
 the State monad to prevent or modify the substitution.
 In the toy example, compilation crashes, but we could catch an exception instead.
