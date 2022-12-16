@@ -32,9 +32,9 @@
 % an abbreviated paper title here
 %
 \author{Curtis D'Alves \and
+Christopher Kumar Anand \and
 Lucas Dutton \and
-Steven Gonder \and
-Christopher Kumar Anand
+Steven Gonder
 }
 %
 \authorrunning{C. D'Alves et al.}
@@ -144,13 +144,13 @@ instance Exp Pretty where
   constant x = Pretty $ show x
 \end{minted}
 
-Finally tagless style provides extensible, user friendly DSLs. 
+Finally tagless style provides extensible, user friendly DSLs.
 
 \subsection{Implicit Sharing via Hash-Consing}
 
 Kiselyov's method
  for detecting implicit sharing in finally tagless
-style uses hash-consing \cite{kiselyov:sharing}. 
+style uses hash-consing \cite{kiselyov:sharing}.
 Hash-consing is based on a bijection of nodes and a set of identifiers,
 e.g., with interface 
 \begin{minted}{haskell}
@@ -188,7 +188,7 @@ instance Exp Graph where
                      hashcons $ NAdd h1 h2)
 \end{minted}
 The trick to uncovering sharing is in the
-\mintinline{hashcons} function, which inserts a new node into the current DAG, but not
+\mintinline{haskell}{hashcons} function, which inserts a new node into the current DAG, but not
 before checking if it is already there.
 \begin{minted}{haskell}
 hashcons :: Node -> State DAG NodeID
@@ -296,8 +296,8 @@ instance Exp Graph where
 Each output it returns will now have to be individually evaluated, so a
 chain of DSL functions that output 2 or more values will suffer from the same
 exponential explosion of hashcons operations,
-and trying to adapt the let construct above, 
-just creates another function function with the same problem (multiple outputs). 
+and trying to adapt the let construct above,
+just creates another function function with the same problem (multiple outputs).
 
 One solution to this issue is to integrate container types such as tuples and
 lists into the DSL language. However doing this eliminates the
@@ -319,7 +319,7 @@ DAG.
 The byte string stays outside monad, while the DAG remains inside.
 We can do this efficiently by replacing the \mintinline{haskell}{BiMap}
 with a trie.
-In our toy example, we use package \texttt{bytestring-trie}.
+In our toy example, we use the package \texttt{bytestring-trie}.
 % TODO reference literature on tries
 
 \begin{minted}{haskell}
@@ -330,12 +330,12 @@ data DAG = DAG { unTrie :: Trie (Node,NodeID)
                , maxID  :: NodeID
                } deriving Show
 \end{minted}
-This looks a bit different because the \mintinline{haskel}{BiMap}
+This looks a bit different because the \mintinline{haskell}{BiMap}
 was a bijective relation between nodes and node ids,
 whereas the trie maps byte strings to pairs (node,node id).
 To get the DAG expressed as a relation, project out the values of the trie.
 
-To prevent confusion, we rename the hash-consing function to \mintinline{haskel}{triecons}, as follows
+To prevent confusion, we rename the hash-consing function to \mintinline{haskell}{triecons}, as follows
 \begin{minted}{haskell}
 triecons :: ByteString -> Node -> State DAG NodeID
 triecons sAST node = do
@@ -449,14 +449,14 @@ seqArgs inps =
 \end{minted}
 We need to make sure we don't attempt to insert the same cache label for two
 different ASTs. Unfortunately, if there is a collision there's no way to escape
-the State monad to prevent or modify the substitution. 
+the State monad to prevent or modify the substitution.
 In the toy example, compilation crashes, but we could catch an exception instead.
 Either way it's up to the DSL
 writer to insure they don't reuse the same label.
 
 \section{Conclusion}
 We have presented a method for constructing finally tagless style DSLs with
-sharing detection, that allow for multiple-output DSL functions. 
+sharing detection, that allow for multiple-output DSL functions.
 It also avoids the use of unsafe referencing as performed when doing observable sharing, c.f. \cite{gill:observablesharing}.
 
 The method has its drawbacks in terms of memory usage, but these can be mitigated

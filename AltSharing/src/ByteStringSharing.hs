@@ -13,6 +13,8 @@ import Data.Trie (Trie)
 import qualified Data.Trie as Trie
 import qualified Data.List as List
 
+import qualified HashConsSharing as HCS
+
 -- | Finally Tagless Style Expression DSL
 class Exp repr where
   add :: repr Int -> repr Int -> repr Int
@@ -32,7 +34,8 @@ data Node = NAdd NodeID NodeID
 
 -- | A Directed Acyclic Graph is inside the values of the Trie
 data DAG = DAG { dagTrie :: Trie (Node,NodeID) -- | a trie from bytestrings to Node/NodeID
-               , dagMaxID :: Int -- | used to track # of triecons performed
+               , dagNumCons :: Int -- | used to track number of triecons performed
+               , dagMaxID :: Int -- | used to track max node id
                } deriving Show
 
 -- | DAG construction representation via the State monad
@@ -54,11 +57,12 @@ buildStringAST node args =
 -- TODO call me something different then triecons?
 triecons :: ByteString -> Node -> State DAG NodeID
 triecons sAST node = do
- DAG trie maxID <- get
+ DAG trie tCnt maxID <- get
+ modify (\dag -> dag { dagNumCons = tCnt + 1})
  case Trie.lookup sAST trie of
    Nothing -> let maxID' = maxID+1
                   trie' = Trie.insert sAST (node,maxID+1) trie
-               in do put $ DAG trie' maxID'
+               in do modify (\dag -> dag { dagTrie = trie', dagMaxID = maxID' } )
                      return maxID'
    Just (_,nodeID) -> return nodeID
 
@@ -67,7 +71,7 @@ seqArgs :: [Graph a] -> State DAG [NodeID]
 seqArgs inps =
   let
     seqArg (Graph sT sAST) =
-      do DAG trie _ <- get
+      do DAG trie _ _ <- get
          case Trie.lookup sAST trie of
            Nothing -> sT
            Just (_,nodeID) -> return nodeID
@@ -90,8 +94,18 @@ instance Exp Graph where
                 _ -> error "black magic"
     in Graph sT sAST
 
-buildDAG g = runState (unGraph g) (DAG Trie.empty 0)
+buildDAG g = runState (unGraph g) (DAG Trie.empty 0 0)
 
 -- | Example of exponential scale of hash-consing
 addChains :: Exp repr => Int -> repr Int -> repr Int
 addChains n x0 = head $ drop n $ iterate (\x -> add x x) x0
+
+plotAddChains size =
+  let
+    chainsDataH = map (\(x,y) -> (fromIntegral x,fromIntegral y))
+      [ (n,HCS.dagNumCons $ snd $ HCS.buildDAG $ HCS.addChains n $ HCS.variable "x") | n <- [0..size] ]
+    chainsDataT = map (\(x,y) -> (fromIntegral x,fromIntegral y))
+      [ (n,dagNumCons $ snd $ buildDAG $ addChains n $ variable "x") | n <- [0..size] ]
+  in plot (PNG "plot.png") [Data2D [Title "Triecons",Style Linespoints,Color Blue] [] chainsDataT
+                           ,Data2D [Title "Hashcons",Style Linespoints,Color Red] [] chainsDataH
+                           ]

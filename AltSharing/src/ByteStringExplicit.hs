@@ -21,7 +21,7 @@ class Exp repr where
 
 -- | Explicit caching of ByteStrings
 class Cacheable repr where
-  cache :: ByteString -> repr ByteString -> repr ByteString
+  cache :: ByteString -> repr a -> repr a
 
 instance Cacheable Graph where
   cache s' (Graph g s _) = Graph g s' (Just s)
@@ -39,7 +39,7 @@ data Node = NAdd NodeID NodeID
 
 -- | A Directed Acyclic Graph is inside the values of the Trie
 data DAG = DAG { dagTrie :: Trie (Node,NodeID) -- | a trie from bytestrings to Node/NodeID
-               , dagCache :: Trie ByteString -- | FIXME switch to Map?
+               , dagCache :: Map ByteString ByteString -- | FIXME switch to Map?
                , dagMaxID :: Int -- | used to track # of hashcons performed
                } deriving Show
 
@@ -82,13 +82,13 @@ seqArgs inps =
            Just (_,nodeID) -> return nodeID
   in sequence $ map seqArg inps
 
-runCache :: ByteString -> Maybe ByteString -> Trie ByteString -> State DAG ()
+runCache :: ByteString -> Maybe ByteString -> Map ByteString ByteString -> State DAG ()
 runCache sAST mCache cacheMap = do
   case mCache of
     Nothing -> return ()
     Just sAST0 ->
-      case Trie.lookup sAST cacheMap of
-        Nothing -> let cacheMap' = Trie.insert sAST sAST0 cacheMap
+      case Map.lookup sAST cacheMap of
+        Nothing -> let cacheMap' = Map.insert sAST sAST0 cacheMap
                    in modify (\dag -> dag { dagCache = cacheMap' })
         Just sAST1 -> if sAST1 == sAST0
                          then return ()
@@ -111,4 +111,12 @@ instance Exp Graph where
                 _ -> error "black magic"
     in Graph sT sAST Nothing
 
-buildDAG g = runState (unGraph g) (DAG Trie.empty Trie.empty 0)
+buildDAG g = runState (unGraph g) (DAG Trie.empty Map.empty 0)
+
+
+-- | Example of exponential scale of hash-consing
+addChains :: (Exp repr,Cacheable repr) => Int -> repr Int -> repr Int
+addChains n x0 = fst
+                 $ head
+                 $ drop n
+                 $ iterate (\(x,i) -> (cache ("add"<>(ByteString.pack $ show i)) (add x x),i+1)) (x0,0)

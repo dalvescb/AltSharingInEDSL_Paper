@@ -96,7 +96,7 @@ empty = BiMap Map.empty 0
 
 -- | A Directed Acyclic Graph is a BiMap between Node and NodeID
 data DAG = DAG { dagMAP :: BiMap Node  -- | A map from Node to NodeID
-               , dagCnt :: Int -- | used to track # of hashcons performed
+               , dagNumCons :: Int -- | used to track # of hashcons performed
                } deriving Show
 
 -- | DAG construction representation via the State monad
@@ -117,7 +117,7 @@ buildDAG g = runState (unGraph g) (DAG empty 0)
 hashcons :: Node -> State DAG NodeID
 hashcons e = do
   DAG m cnt <- get
-  modify (\dag -> dag { dagCnt = cnt+1}) -- track number of hashcons performed
+  modify (\dag -> dag { dagNumCons = cnt+1}) -- track number of hashcons performed
   case lookup_key e m of
     Nothing -> let (k,m') = insert e m
                in modify (\dag -> dag { dagMAP = m' })
@@ -131,7 +131,7 @@ addChains n x0 = head $ drop n $ iterate (\x -> add x x) x0
 plotAddChains size =
   let
     chainsData = map (\(x,y) -> (fromIntegral x,fromIntegral y))
-      [ (n,dagCnt $ snd $ buildDAG $ addChains n $ variable "x") | n <- [0..size] ]
+      [ (n,dagNumCons $ snd $ buildDAG $ addChains n $ variable "x") | n <- [0..size] ]
   in plot (PNG "plot.png") $ Data2D [Title "Hashcons Scaling",Style Linespoints,Color Red] [] chainsData
 
 
