@@ -1,0 +1,70 @@
+HashCons
+10
+
+	total time  =        0.00 secs   (9 ticks @ 1000 us, 16 processors)
+	total alloc =     305,864 bytes  (excludes profiling overheads)
+
+50
+
+	total time  =        0.00 secs   (1 ticks @ 1000 us, 16 processors)
+	total alloc =     390,176 bytes  (excludes profiling overheads)
+
+100
+
+	total time  =        0.00 secs   (4 ticks @ 1000 us, 16 processors)
+	total alloc =     500,184 bytes  (excludes profiling overheads)
+
+150
+
+	total time  =        0.00 secs   (1 ticks @ 1000 us, 16 processors)
+	total alloc =     619,296 bytes  (excludes profiling overheads)
+
+200
+
+	total time  =        0.00 secs   (1 ticks @ 1000 us, 16 processors)
+	total alloc =     739,304 bytes  (excludes profiling overheads)
+
+10000
+
+	total time  =        0.01 secs   (18 ticks @ 1000 us, 16 processors)
+	total alloc =  28,662,592 bytes  (excludes profiling overheads)
+
+
+50000
+	total time  =        0.03 secs   (105 ticks @ 1000 us, 16 processors)
+	total alloc = 155,993,544 bytes  (excludes profiling overheads)
+
+TrieCons
+10
+
+	total time  =        0.00 secs   (6 ticks @ 1000 us, 16 processors)
+	total alloc =     359,888 bytes  (excludes profiling overheads)
+50
+
+	total time  =        0.00 secs   (1 ticks @ 1000 us, 16 processors)
+	total alloc =     737,664 bytes  (excludes profiling overheads)
+
+100
+
+	total time  =        0.00 secs   (2 ticks @ 1000 us, 16 processors)
+	total alloc =   1,214,736 bytes  (excludes profiling overheads)
+
+150
+
+	total time  =        0.00 secs   (7 ticks @ 1000 us, 16 processors)
+	total alloc =   1,773,416 bytes  (excludes profiling overheads)
+
+200
+
+	total time  =        0.00 secs   (6 ticks @ 1000 us, 16 processors)
+	total alloc =   2,333,680 bytes  (excludes profiling overheads)
+
+10000
+
+	total time  =        0.03 secs   (103 ticks @ 1000 us, 16 processors)
+	total alloc = 129,146,808 bytes  (excludes profiling overheads)
+
+50000
+
+	total time  =        0.16 secs   (509 ticks @ 1000 us, 16 processors)
+	total alloc = 723,437,504 bytes  (excludes profiling overheads)
