@@ -1,0 +1,89 @@
+#+Title: Alternative Methods for Retaining Explicit and Finding Implicit Sharing in Embedded DSLs
+#+DATE: 2022-01-13
+#+EMAIL: curtis.dalves@gmail.com
+#+AUTHOR: Curtis D'Alves
+
+* Overview
+  * Welcome to my talk!
+  * I'm going to present a new method for detecting sharing in embedded DSLs
+    + I'll start by giving a small example of an embedded DSL
+    + Identify the "sharing problem" that occurs
+    + Present current solutions with their advantages/shortcomings
+    + Explain my new method with it's advantages/shortcomings
+
+* Embedded Domain Specific Languages
+
+ * Consider the naive eDSL implemented as a Haskell data type:
+#+BEGIN_SRC haskell :results value
+data Exp
+  = Add Exp Exp
+  | Variable String
+  | Constant Int
+#+END_SRC
+
+ * Expressions can be constructed in the eDSL like so
+#+BEGIN_SRC haskell :results value
+expr =
+  let
+    v0 = Variable "v0"
+    exp0 = Add v0 (Constant 0)
+  in Add exp0 exp0
+#+END_SRC
+
+* Implementing eDSL Functionality
+
+  * DSL designers will commonly implement functionality like evaluation
+#+BEGIN_SRC haskell :results value
+eval (Add e0 e1) varMap = eval e0 + eval e1
+eval (Variable lbl) varMap = lookup v varMap
+eval (Constant c) varMap = c
+#+END_SRC
+
+  * Or pretty printing
+#+BEGIN_SRC haskell :results value
+pretty (Add e0 e1) = "("++pretty e0++") + ("++pretty e1++")"
+pretty (Variable lbl) = lbl
+pretty (Constant c) = show c
+#+END_SRC
+
+* Finally Tagless Style
+
+  * Data type based eDSL's have an extensibility issue, you can't extend the DSL
+    operations without directly modifying the core library
+
+  * We can redefine our eDSL in Finally Tagless Style (of Carette et al.) to solve this issue
+#+BEGIN_SRC haskell :results value
+class Exp repr where
+  variable :: String -> repr Int
+  constant :: String -> repr Int
+  add :: repr Int -> repr Int -> repr Int
+#+END_SRC
+
+  * New functionality is implemented through type wrappers that provide
+    different instances
+#+BEGIN_SRC haskell :results value
+newtype Pretty a = Pretty { unPretty :: String }
+
+instance Exp Pretty where
+  add x y = Pretty $ "("++unPretty x++") + ("++unPretty y++")"
+  variable x = Pretty x
+  constant x = Pretty $ show x
+#+END_SRC
+
+* Sharing
+ * Generates the tree
+#+begin_src mermaid :file AST.png
+graph TB;
+    Add0[Add]-->V0[v0]
+    Add0-->C0[0]
+    Add1[Add]-->V1[v0]
+    Add1-->C1[0]
+    Add2[Add]-->Add0
+    Add2-->Add1
+#+end_src
+#+RESULTS:
+[[file:AST.png]]
+
+
+
+#  LocalWords:  DSLs ASTs LocalWords eDSL Tagless eDSL's Carette al
