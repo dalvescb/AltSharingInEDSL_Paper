@@ -14,7 +14,7 @@
 * Embedded Domain Specific Languages
 
 + Consider the naive eDSL implemented as a Haskell data type:
-   
+
 #+BEGIN_SRC haskell :results value
 data Exp
   = Add Exp Exp
@@ -23,12 +23,11 @@ data Exp
 #+END_SRC
 
 + Expressions can be constructed in the eDSL like so
-   
+
 #+BEGIN_SRC haskell :results value
 expr =
   let
-    v0 = Variable "v0"
-    exp0 = Add v0 (Constant 0)
+    exp0 = Add (Variable "x") (Constant 0)
   in Add exp0 exp0
 #+END_SRC
 
@@ -38,7 +37,7 @@ expr =
 
 #+BEGIN_SRC haskell :results value
 eval (Add e0 e1) varMap = eval e0 + eval e1
-eval (Variable lbl) varMap = lookup v varMap
+eval (Variable lbl) varMap = lookup lbl varMap
 eval (Constant c) varMap = c
 #+END_SRC
 
@@ -56,6 +55,7 @@ pretty (Constant c) = show c
     operations without directly modifying the core library
 
 + We can redefine our eDSL in Finally Tagless Style (of Carette et al.) to solve this issue
+
 #+BEGIN_SRC haskell :results value
 class Exp repr where
   variable :: String -> repr Int
@@ -67,6 +67,7 @@ class Exp repr where
 
 + New functionality is implemented through type wrappers that provide
   different instances
+
 #+BEGIN_SRC haskell :results value
 newtype Pretty a = Pretty { unPretty :: String }
 
@@ -76,20 +77,56 @@ instance Exp Pretty where
   constant x = Pretty $ show x
 #+END_SRC
 
-* Sharing
- * Generates the tree
-#+begin_src mermaid :file AST.png
+* The Observable Sharing Problem
+
++ Consider the following example DSL function
+
+#+BEGIN_SRC haskell :results value
+expr =
+  let
+    exp0 = add (variable "x") (constant 0)
+  in add expr0 expr0
+#+END_SRC
+
++ It generates the Abstract Syntax Tree
+#+begin_src mermaid :file AST0.png
 graph TB;
-    Add0[Add]-->V0[v0]
+    Add0[Add]-->V0[x]
     Add0-->C0[0]
-    Add1[Add]-->V1[v0]
+    Add1[Add]-->V1[x]
     Add1-->C1[0]
     Add2[Add]-->Add0
     Add2-->Add1
 #+end_src
 #+RESULTS:
-[[file:AST.png]]
+[[file:AST0.png]]
 
++ Or does it generate the Directed Acyclic Graph
+#+begin_src mermaid :file AST1.png
+graph TB;
+    Add0[Add]-->V0[x]
+    Add0-->C0[0]
+    Add2[Add]-->Add0
+    Add2-->Add0
+#+end_src
+#+RESULTS:
+[[file:AST1.png]]
 
+* When Haskell's Sharing Is Insufficient
 
-#  LocalWords:  DSLs ASTs LocalWords eDSL Tagless eDSL's Carette al
++ Our pretty printer instance will generate redundant expressions
+#+BEGIN_SRC haskell :results value
+> expr :: Pretty Float
+Pretty (("x" + 0) + ("x" + 0))
+#+END_SRC
+
++ What if we want to perform code generation, that uses Haskell's sharing, for example
+#+BEGIN_SRC haskell :results value
+> expr :: CodeGen
+CodeGen (["exp0 = x + 0"
+         ,"exp1 = exp0 + exp0"])
+#+END_SRC
+
++ How would we write such an instance for our DSL?
+
+#  LocalWords:  DSLs ASTs LocalWords eDSL Tagless eDSL's Carette al Haskell's
