@@ -4,16 +4,17 @@
 #+AUTHOR: Curtis D'Alves
 
 * Overview
-  * Welcome to my talk!
-  * I'm going to present a new method for detecting sharing in embedded DSLs
-    + I'll start by giving a small example of an embedded DSL
-    + Identify the "sharing problem" that occurs
-    + Present current solutions with their advantages/shortcomings
-    + Explain my new method with it's advantages/shortcomings
++ Welcome to my talk!
++ I'm going to present a new method for detecting sharing in embedded DSLs
+    * I'll start by giving a small example of an embedded DSL
+    * Identify the "sharing problem" that occurs
+    * Present current solutions with their advantages/shortcomings
+    * Explain my new method with it's advantages/shortcomings
 
 * Embedded Domain Specific Languages
 
- * Consider the naive eDSL implemented as a Haskell data type:
++ Consider the naive eDSL implemented as a Haskell data type:
+   
 #+BEGIN_SRC haskell :results value
 data Exp
   = Add Exp Exp
@@ -21,7 +22,8 @@ data Exp
   | Constant Int
 #+END_SRC
 
- * Expressions can be constructed in the eDSL like so
++ Expressions can be constructed in the eDSL like so
+   
 #+BEGIN_SRC haskell :results value
 expr =
   let
@@ -30,28 +32,30 @@ expr =
   in Add exp0 exp0
 #+END_SRC
 
-* Implementing eDSL Functionality
+** Implementing eDSL Functionality
 
-  * DSL designers will commonly implement functionality like evaluation
++ DSL designers will commonly implement functionality like evaluation
+
 #+BEGIN_SRC haskell :results value
 eval (Add e0 e1) varMap = eval e0 + eval e1
 eval (Variable lbl) varMap = lookup v varMap
 eval (Constant c) varMap = c
 #+END_SRC
 
-  * Or pretty printing
++ Or pretty printing
+
 #+BEGIN_SRC haskell :results value
 pretty (Add e0 e1) = "("++pretty e0++") + ("++pretty e1++")"
 pretty (Variable lbl) = lbl
 pretty (Constant c) = show c
 #+END_SRC
 
-* Finally Tagless Style
+** Finally Tagless Style
 
-  * Data type based eDSL's have an extensibility issue, you can't extend the DSL
++ Data type based eDSL's have an extensibility issue, you can't extend the DSL
     operations without directly modifying the core library
 
-  * We can redefine our eDSL in Finally Tagless Style (of Carette et al.) to solve this issue
++ We can redefine our eDSL in Finally Tagless Style (of Carette et al.) to solve this issue
 #+BEGIN_SRC haskell :results value
 class Exp repr where
   variable :: String -> repr Int
@@ -59,8 +63,10 @@ class Exp repr where
   add :: repr Int -> repr Int -> repr Int
 #+END_SRC
 
-  * New functionality is implemented through type wrappers that provide
-    different instances
+** Finally Tagless Style
+
++ New functionality is implemented through type wrappers that provide
+  different instances
 #+BEGIN_SRC haskell :results value
 newtype Pretty a = Pretty { unPretty :: String }
 
