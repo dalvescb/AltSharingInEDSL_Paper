@@ -68,14 +68,14 @@ class Exp repr where
 + New functionality is implemented through type wrappers that provide
   different instances
 
-#+BEGIN_SRC haskell :results value
-newtype Pretty a = Pretty { unPretty :: String }
+  #+BEGIN_SRC haskell :results value
+  newtype Pretty a = Pretty { pretty :: String }
 
-instance Exp Pretty where
-  add x y = Pretty $ "("++unPretty x++") + ("++unPretty y++")"
-  variable x = Pretty x
-  constant x = Pretty $ show x
-#+END_SRC
+  instance Exp Pretty where
+    add x y = Pretty $ "("++unPretty x++") + ("++unPretty y++")"
+    variable x = Pretty x
+    constant x = Pretty $ show x
+  #+END_SRC
 
 * The Observable Sharing Problem
 
@@ -112,7 +112,36 @@ graph TB;
 #+RESULTS:
 [[file:AST1.png]]
 
-* When Haskell's Sharing Is Insufficient
+** Generating a Directed Acyclic Graph
+
++ We can easily generate an AST from our DSL (the same as our data type based DSL)
+#+BEGIN_SRC haskell :results value
+data AST a
+  = Add (AST a) (AST a)
+  | Variable String
+  | Constant a
+
+instance Exp AST where
+  add = Add
+  variable = Variable
+  constant = Constant
+#+END_SRC
+
++ But how would we generate a DAG that explicitly identifies sharing
+#+BEGIN_SRC haskell :results value
+data NodeId = Int
+data Node a = NConst a
+            | NVar String
+            | NAdd NodeId NodeId
+
+data DAG a = Map NodeId (Node a)
+
+instance Exp AST where
+  variable x = -- how do we generate a unique NodeID?
+  ...
+#+END_SRC
+
+** When Haskell's Sharing Is Insufficient
 
 + Our pretty printer instance will generate redundant expressions
 #+BEGIN_SRC haskell :results value
@@ -120,13 +149,14 @@ graph TB;
 Pretty (("x" + 0) + ("x" + 0))
 #+END_SRC
 
-+ What if we want to perform code generation, that uses Haskell's sharing, for example
++ What if we want to perform code generation, for example
 #+BEGIN_SRC haskell :results value
 > expr :: CodeGen
 CodeGen (["exp0 = x + 0"
          ,"exp1 = exp0 + exp0"])
 #+END_SRC
 
-+ How would we write such an instance for our DSL?
++ How would we write such an instance for our DSL? The problem is the same as
+  generating a DAG, we need to /OBSERVE SHARING/
 
 #  LocalWords:  DSLs ASTs LocalWords eDSL Tagless eDSL's Carette al Haskell's
