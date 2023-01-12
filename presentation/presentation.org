@@ -343,13 +343,67 @@ data Graph a = Graph { unGraph :: State DAG NodeID
 
 * Comparing our methods
 
-    | HashCons time  | 0.0 secs        | 0.0 secs        | 0.01 secs         | 0.03 secs         |
-    | HashCons alloc | 619,296 bytes   | 739,304 bytes   | 28,662,592 bytes  | 155,993,544 bytes |
-    | TrieCons time  | 0.0 secs        | 0.0 secs        | 0.03 secs         | 0.16 secs         |
-    | TrieCons alloc | 1,773,416 bytes | 2,333,680 bytes | 129,146,808 bytes | 723,437,504 bytes |
+    | HashCons time  | 0.0 secs | 0.0 secs | 0.01 secs | 0.03 secs |
+    | HashCons alloc | 0.62 MB  | 0.74 MB  | 28.67 MB  | 155.99 MB |
+    | TrieCons time  | 0.0 secs | 0.0 secs | 0.03 secs | 0.16 secs |
+    | TrieCons alloc | 1.77 MB  | 2.33 MB  | 129.14 MB | 723.43 MB |
+
+** Real World Benchmarks
+
++ We implemented both methods on our DSL ~COCONUT~, a high level assembly
+  language similar to LLVM
+#+BEGIN_SRC haskell :results value
+class CoreISA repr where
+  -- | Stores an unsigned 64-bit integer in a general purpose register.
+  unwrd64 :: Word64 -> repr GPR
+  -- | Stores a list of doublewords in a vector register.
+  undwrds :: [Word64] -> repr VR
+  -- | Load from memory into a GPR
+  ldMR :: repr MR -> Int -> (repr GPR, repr MR)
+  -- | Store a GPR into memory
+  stdMR   :: repr MR -> Int -> repr GPR -> repr MR
+  -- | Bitwise NAND of two 64-bit general-purpose registers (NNGRK)
+  nandG   :: repr GPR -> repr GPR -> repr GPR
+  -- | Bitwise NOR of two 64-bit general-purpose registers (NOGRK)
+  norG    :: repr GPR -> repr GPR -> repr GPR
+  -- | Bitwise NXOR of two 64-bit general-purpose registers (NXGRK)
+  eqvG    :: repr GPR -> repr GPR -> repr GPR
+  -- | Addition of two 64-bit general-purpose registers (AGRK)
+  addG    :: repr GPR -> repr GPR -> repr GPR
+  ...
+#+END_SRC
+
++ We can use this language to encode basic blocks in ~Single Static Assignment~ form
+#+BEGIN_SRC haskell :results value
+add2 :: CoreISA repr => (repr GPR, repr GPR) -> (repr GPR, repr GPR)
+add2 (a, b) =
+    let
+        a' = addG a b
+        b' = addG a' b
+    in (a', b')
+#+END_SRC
+
+** HashCons vs TrieCons
+
+   #+ATTR_HTML: :width 800%
+   [[file:cos_profile_triecons.png]]
+
+
+   #+ATTR_HTML: :width 800%
+   [[file:cos_profile_hashcons.png]]
+
+** Limitations Without Explicit Substitutions
+
+   #+ATTR_HTML: :width 800%
+   [[file:noexplicit.png]]
+
+
+   #+ATTR_HTML: :width 800%
+   [[file:explicit.png]]
 
 
 * Questions
 
 #  LocalWords:  DSLs ASTs LocalWords eDSL Tagless eDSL's Carette al Haskell's
-#  LocalWords:  NodeId Kiselyov Consing consing AST Trie Memoizing trie
+#  LocalWords:  NodeId Kiselyov Consing consing AST Trie Memoizing trie LLVM
+#  LocalWords:  TrieCons alloc HashCons secs
