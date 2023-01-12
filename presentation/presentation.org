@@ -101,7 +101,7 @@ graph TB;
 #+RESULTS:
 [[file:AST0.png]]
 
-+ Or does it generate the Directed Acyclic Graph
++ Or does it generate the Directed Acyclic Graph?
 #+begin_src mermaid :file AST1.png
 graph TB;
     Add0[Add]-->V0[x]
@@ -111,6 +111,24 @@ graph TB;
 #+end_src
 #+RESULTS:
 [[file:AST1.png]]
+
+** When Haskell's Sharing Is Insufficient
+
++ Our pretty printer instance will generate redundant expressions
+#+BEGIN_SRC haskell :results value
+> pretty expr :: Pretty Float
+Pretty (("x" + 0) + ("x" + 0))
+#+END_SRC
+
++ What if we want to perform code generation, for example
+#+BEGIN_SRC haskell :results value
+> codegen expr :: CodeGen
+CodeGen (["exp0 = x + 0"
+         ,"exp1 = exp0 + exp0"])
+#+END_SRC
+
++ How would we write such an instance for our DSL? The problem is the same as
+  generating a DAG, we need to *OBSERVE SHARING*
 
 ** Generating a Directed Acyclic Graph
 
@@ -129,34 +147,209 @@ instance Exp AST where
 
 + But how would we generate a DAG that explicitly identifies sharing
 #+BEGIN_SRC haskell :results value
-data NodeId = Int
+type NodeId = Int
 data Node a = NConst a
             | NVar String
             | NAdd NodeId NodeId
 
-data DAG a = Map NodeId (Node a)
+newtype DAG a = Map NodeId (Node a)
 
-instance Exp AST where
+instance Exp DAG where
   variable x = -- how do we generate a unique NodeID?
   ...
 #+END_SRC
 
-** When Haskell's Sharing Is Insufficient
+** Generating Unique Identifiers
 
-+ Our pretty printer instance will generate redundant expressions
++ We can use the *State Monad* to keep track of a counter and create a
+  unique NodeId
 #+BEGIN_SRC haskell :results value
-> expr :: Pretty Float
-Pretty (("x" + 0) + ("x" + 0))
+newtype Graph a = Graph { unGraph :: State (DAG,Int) NodeId }
+
+instance Exp Graph where
+  add e1 e2 = Graph (do h1 <- unGraph e1
+                        h2 <- unGraph e2
+                        insertNode $ NAdd h1 h2)
+  ...
+insertNode n = do (DAG m,cnt) <- get
+                  put (DAG (insert cnt n m),cnt+1)
 #+END_SRC
 
-+ What if we want to perform code generation, for example
++ However, this still doesn't solve our sharing problem
+
+* Implicit Sharing via Hash-Consing
++ Oleg Kiselyov presented a solution to this via the method of hash-consing
 #+BEGIN_SRC haskell :results value
-> expr :: CodeGen
-CodeGen (["exp0 = x + 0"
-         ,"exp1 = exp0 + exp0"])
+instance Exp Graph where
+  add e1 e2 = Graph (do h1 <- unGraph e1
+                        h2 <- unGraph e2
+                        hashcons $ NAdd h1 h2)
+  ...
+hashcons :: Node -> State DAG NodeID
+hashcons e = do
+  (DAG m,cnt) <- get
+  case lookup_key e m of
+    Nothing -> let (k,m') = insert e m
+               in put (DAG m',cnt+1) >> return k
+    Just k -> return k
+#+END_SRC
++ Hash-consing essentially performs common-subexpression-elimination by checking
+  if a node has already been inserted beforehand
+
+** Limitations of Hash-Consing
++ The problem with just Hash-Consing, is every time a value is shared it's AST
+  is re-traversed, performing a lookup check at each node
++ Consider the following example
+#+BEGIN_SRC haskell :results value
+addChains =
+  let
+    x0 = variable "x"
+    x1 = add x0 x0
+    x2 = add x1 x1
+    ...
+  in xn
+#+END_SRC
++ This leads to an exponential scaling of hash-cons operations
+  [[file:hashconscmp.png]]
+
+** Explicit Sharing
++ Kiselyov noted this issue, and proposed a solution, explicit sharing via a
+  custom let construct
+#+BEGIN_SRC haskell :results value
+class ExpLet repr where
+  let_ :: repr a -> (repr a -> repr b) -> repr b
+instance ExpLet Graph where
+  let_ e f = Graph (do x <- unGraph e
+                     unGraph $ f (Graph (return x)))
 #+END_SRC
 
-+ How would we write such an instance for our DSL? The problem is the same as
-  generating a DAG, we need to /OBSERVE SHARING/
++ We can now define the example from before with explicit sharing
+#+BEGIN_SRC haskell :results value
+addChains x =
+  let_ x (\x0 ->
+  let_ (add x0 x0)  (\x1 ->
+  let_ (add x1 x1)  (\x2 ->
+   ...
+  )))
+#+END_SRC
+
+** Limitations of Explicit Sharing
++ This method does not work for DSL functions that return multiple outputs
+#+BEGIN_SRC haskell :results value
+class Exp repr where
+  variable :: String -> repr Int
+  constant :: String -> repr Int
+  add :: repr Int -> repr Int -> repr Int
+  novel :: (repr Int,repr Int) -> (repr Int,repr Int)
+#+END_SRC
+
++ The problem is that DAG generation requires splitting the state monad in two
+#+BEGIN_SRC haskell :results value
+instance Exp Graph where
+  ...
+  novel e1 e2 = let
+     g1 = Graph (do h1 <- unGraph e1
+                    h2 <- unGraph e2
+                    hashcons $ Novel1 h1 h2)
+     g2 = Graph (do h1 <- unGraph e1
+                    h2 <- unGraph e2
+                    hashcons $ Novel2 h1 h2)
+     in (g1,g2)
+#+END_SRC
+
+* Our Method, Implicit Sharing Via Trie Memoizing
+
++ Our proposed solution is to build a *serialized AST using byte strings* for each
+  node *alongside the State Monad*
+#+BEGIN_SRC haskell :results value
+data DAG = DAG { unTrie :: Trie (Node,NodeID), maxID :: NodeID }
+
+data Graph a = Graph { unGraph :: State DAG NodeID
+                     , stringAST :: ByteString }
+#+END_SRC
+
++ The method also performs hash-consing, but with a trie
+#+BEGIN_SRC haskell :results value
+triecons :: ByteString -> Node -> State DAG NodeID
+triecons sAST node = do
+  DAG trie maxID <- get
+  case Trie.lookup sAST trie of
+    Nothing -> let maxID' = maxID+1
+                   trie' = Trie.insert sAST (node,maxID') trie
+                in do put $ DAG trie' maxID'
+                      return maxID'
+    Just (_,nodeID) -> return nodeID
+#+END_SRC
+
+** Preventing redundant traversal
+
++ When we implement DAG generation, we build a serialized AST at each node
+#+BEGIN_SRC haskell :results value
+instance Exp Graph where
+  add e1 e2 = let
+      sAST = buildStringAST "nadd" [e1,e2]
+      sT = do ns <- seqArgs [e1,e2]
+              case ns of
+                [n1,n2] -> triecons sAST $ NAdd n1 n2
+                _ -> error "black magic"
+    in Graph sT sAST
+#+END_SRC
+
++ The key to preventing re-traversal of nodes is in how arguments are sequenced
+#+BEGIN_SRC haskell :results value
+seqArgs :: [Graph a] -> State DAG [NodeID]
+seqArgs inps =
+  let
+    seqArg (Graph sT sAST) =
+      do DAG trie _ <- get
+         case Trie.lookup sAST  trie of
+           Nothing -> sT
+           Just (_,nodeID) -> return nodeID
+  in sequence $ map seqArg inps
+#+END_SRC
+
+** Limitations of Our Method
+
++ The serialized AST can consume a lot of memory
++ The ~addChains~ example from before now has exponential scaling in memory
+  instead of computation
+
+** Explicit Sharing
+
++ Just like Kiselyov, we add a method for explicit sharing (this time of
+  memory)
+#+BEGIN_SRC haskell :results value
+class Substitute repr where
+  subT :: ByteString -> repr a -> repr a
+instance Substitute Graph where
+  subT s' (Graph g s _) = Graph g s' (Just s)
+
+exampleSubT x y = let
+  z = subT "z" (add x y)
+  in add z z
+#+END_SRC
+
++ This requires us to keep a map of substitutions along with our DAG
+#+BEGIN_SRC haskell :results value
+data DAG = DAG { dagTrie :: Trie (Node,NodeID)
+               , dagSubMap :: Map ByteString ByteString
+               , dagMaxID :: Int
+               } deriving Show
+
+data Graph a = Graph { unGraph :: State DAG NodeID
+                     , unStringAST :: ByteString
+                     , unSubT :: Maybe ByteString }
+#+END_SRC
+
+* Comparing our methods
+
+    | HashCons time  | 0.0 secs        | 0.0 secs        | 0.01 secs         | 0.03 secs         |
+    | HashCons alloc | 619,296 bytes   | 739,304 bytes   | 28,662,592 bytes  | 155,993,544 bytes |
+    | TrieCons time  | 0.0 secs        | 0.0 secs        | 0.03 secs         | 0.16 secs         |
+    | TrieCons alloc | 1,773,416 bytes | 2,333,680 bytes | 129,146,808 bytes | 723,437,504 bytes |
+
+
+* Questions
 
 #  LocalWords:  DSLs ASTs LocalWords eDSL Tagless eDSL's Carette al Haskell's
+#  LocalWords:  NodeId Kiselyov Consing consing AST Trie Memoizing trie
