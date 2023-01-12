@@ -1,0 +1,176 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<svg xmlns='http://www.w3.org/2000/svg' version='1.0' width='1280.0' height='720.0'>
+<defs>
+</defs>
+<g fill='#ffffff'>
+<rect x='0.0' y='0.0' width='1280.0' height='720.0' />
+</g>
+<g fill='#000000' stroke='#000000' stroke-width='1.0'>
+<text stroke='none' x='640.0' y='45.0' font-size='25.0' text-anchor='middle'>zMASS-exe +RTS -N -P -hc -L50 (Wed Jan 11 19:51 2023)</text>
+<text stroke='none' transform='translate(30.0,360.0) rotate(-90.0)' font-size='20.0' text-anchor='middle'>bytes</text>
+<text stroke='none' x='510.0' y='690.0' font-size='20.0' text-anchor='middle'>seconds</text>
+<line x1='60.0' x2='930.0' y1='630.0' y2='630.0' />
+<text stroke='none' x='80.0' y='620.0' font-size='15.0' text-anchor='end'>0</text>
+<line x1='60.0' x2='930.0' y1='592.3735' y2='592.3735' />
+<text stroke='none' x='80.0' y='582.3735' font-size='15.0' text-anchor='end'>20k</text>
+<line x1='60.0' x2='930.0' y1='554.7471' y2='554.7471' />
+<text stroke='none' x='80.0' y='544.7471' font-size='15.0' text-anchor='end'>40k</text>
+<line x1='60.0' x2='930.0' y1='517.1206' y2='517.1206' />
+<text stroke='none' x='80.0' y='507.1206' font-size='15.0' text-anchor='end'>60k</text>
+<line x1='60.0' x2='930.0' y1='479.4941' y2='479.4941' />
+<text stroke='none' x='80.0' y='469.4941' font-size='15.0' text-anchor='end'>80k</text>
+<line x1='60.0' x2='930.0' y1='441.8677' y2='441.8677' />
+<text stroke='none' x='80.0' y='431.8677' font-size='15.0' text-anchor='end'>100k</text>
+<line x1='60.0' x2='930.0' y1='404.2412' y2='404.2412' />
+<text stroke='none' x='80.0' y='394.2412' font-size='15.0' text-anchor='end'>120k</text>
+<line x1='60.0' x2='930.0' y1='366.6147' y2='366.6147' />
+<text stroke='none' x='80.0' y='356.6147' font-size='15.0' text-anchor='end'>140k</text>
+<line x1='60.0' x2='930.0' y1='328.9883' y2='328.9883' />
+<text stroke='none' x='80.0' y='318.9883' font-size='15.0' text-anchor='end'>160k</text>
+<line x1='60.0' x2='930.0' y1='291.3618' y2='291.3618' />
+<text stroke='none' x='80.0' y='281.3618' font-size='15.0' text-anchor='end'>180k</text>
+<line x1='60.0' x2='930.0' y1='253.7353' y2='253.7353' />
+<text stroke='none' x='80.0' y='243.7353' font-size='15.0' text-anchor='end'>200k</text>
+<line x1='60.0' x2='930.0' y1='216.1089' y2='216.1089' />
+<text stroke='none' x='80.0' y='206.1089' font-size='15.0' text-anchor='end'>220k</text>
+<line x1='60.0' x2='930.0' y1='178.4824' y2='178.4824' />
+<text stroke='none' x='80.0' y='168.4824' font-size='15.0' text-anchor='end'>240k</text>
+<line x1='60.0' x2='930.0' y1='140.8559' y2='140.8559' />
+<text stroke='none' x='80.0' y='130.8559' font-size='15.0' text-anchor='end'>260k</text>
+<line x1='60.0' x2='930.0' y1='103.2295' y2='103.2295' />
+<line x1='90.0' x2='90.0' y1='660.0' y2='90.0' />
+<text stroke='none' x='100.0' y='650.0' font-size='15.0' text-anchor='start'>0</text>
+<line x1='141.8178' x2='141.8178' y1='660.0' y2='90.0' />
+<text stroke='none' x='151.8178' y='650.0' font-size='15.0' text-anchor='start'>0.02</text>
+<line x1='193.6356' x2='193.6356' y1='660.0' y2='90.0' />
+<text stroke='none' x='203.6356' y='650.0' font-size='15.0' text-anchor='start'>0.04</text>
+<line x1='245.4534' x2='245.4534' y1='660.0' y2='90.0' />
+<text stroke='none' x='255.4534' y='650.0' font-size='15.0' text-anchor='start'>0.06</text>
+<line x1='297.2711' x2='297.2711' y1='660.0' y2='90.0' />
+<text stroke='none' x='307.2711' y='650.0' font-size='15.0' text-anchor='start'>0.08</text>
+<line x1='349.0889' x2='349.0889' y1='660.0' y2='90.0' />
+<text stroke='none' x='359.0889' y='650.0' font-size='15.0' text-anchor='start'>0.1</text>
+<line x1='400.9067' x2='400.9067' y1='660.0' y2='90.0' />
+<text stroke='none' x='410.9067' y='650.0' font-size='15.0' text-anchor='start'>0.12</text>
+<line x1='452.7245' x2='452.7245' y1='660.0' y2='90.0' />
+<text stroke='none' x='462.7245' y='650.0' font-size='15.0' text-anchor='start'>0.14</text>
+<line x1='504.5423' x2='504.5423' y1='660.0' y2='90.0' />
+<text stroke='none' x='514.5423' y='650.0' font-size='15.0' text-anchor='start'>0.16</text>
+<line x1='556.3601' x2='556.3601' y1='660.0' y2='90.0' />
+<text stroke='none' x='566.3601' y='650.0' font-size='15.0' text-anchor='start'>0.18</text>
+<line x1='608.1779' x2='608.1779' y1='660.0' y2='90.0' />
+<text stroke='none' x='618.1779' y='650.0' font-size='15.0' text-anchor='start'>0.2</text>
+<line x1='659.9957' x2='659.9957' y1='660.0' y2='90.0' />
+<text stroke='none' x='669.9957' y='650.0' font-size='15.0' text-anchor='start'>0.22</text>
+<line x1='711.8134' x2='711.8134' y1='660.0' y2='90.0' />
+<text stroke='none' x='721.8134' y='650.0' font-size='15.0' text-anchor='start'>0.24</text>
+<line x1='763.6312' x2='763.6312' y1='660.0' y2='90.0' />
+<text stroke='none' x='773.6312' y='650.0' font-size='15.0' text-anchor='start'>0.26</text>
+<line x1='815.449' x2='815.449' y1='660.0' y2='90.0' />
+<text stroke='none' x='825.449' y='650.0' font-size='15.0' text-anchor='start'>0.28</text>
+<line x1='867.2668' x2='867.2668' y1='660.0' y2='90.0' />
+<text stroke='none' x='877.2668' y='650.0' font-size='15.0' text-anchor='start'>0.3</text>
+<line x1='919.0846' x2='919.0846' y1='660.0' y2='90.0' />
+<g fill-opacity='0.7'>
+<g fill='#ffffff'>
+<rect x='90.0' y='90.0' width='840.0' height='540.0' />
+</g>
+<g fill='#8429ad'>
+<path d='M 90.0,630.0 L 930.0,295.877 L 853.3356,630.0 L 853.3356,630.0 L 930.0,90.0 L 90.0,630.0 L 90.0,630.0 Z' /></g>
+<g fill='#0d42aa'>
+<path d='M 90.0,630.0 L 930.0,418.8704 L 853.3356,630.0 L 853.3356,630.0 L 930.0,295.877 L 90.0,630.0 L 90.0,630.0 Z' /></g>
+<g fill='#68e25c'>
+<path d='M 90.0,630.0 L 930.0,458.1524 L 853.3356,630.0 L 853.3356,630.0 L 930.0,418.8704 L 90.0,630.0 L 90.0,630.0 Z' /></g>
+<g fill='#f95fb6'>
+<path d='M 90.0,630.0 L 930.0,487.6516 L 853.3356,630.0 L 853.3356,630.0 L 930.0,458.1524 L 90.0,630.0 L 90.0,630.0 Z' /></g>
+<g fill='#3ac5b6'>
+<path d='M 90.0,630.0 L 930.0,507.3678 L 853.3356,630.0 L 853.3356,630.0 L 930.0,487.6516 L 90.0,630.0 L 90.0,630.0 Z' /></g>
+<g fill='#278ea7'>
+<path d='M 90.0,630.0 L 930.0,525.1125 L 853.3356,630.0 L 853.3356,630.0 L 930.0,507.3678 L 90.0,630.0 L 90.0,630.0 Z' /></g>
+<g fill='#02baf3'>
+<path d='M 90.0,630.0 L 930.0,536.8971 L 853.3356,630.0 L 853.3356,630.0 L 930.0,525.1125 L 90.0,630.0 L 90.0,630.0 Z' /></g>
+<g fill='#158d73'>
+<path d='M 90.0,630.0 L 930.0,548.3054 L 853.3356,630.0 L 853.3356,630.0 L 930.0,536.8971 L 90.0,630.0 L 90.0,630.0 Z' /></g>
+<g fill='#61ba31'>
+<path d='M 90.0,630.0 L 930.0,558.2388 L 853.3356,630.0 L 853.3356,630.0 L 930.0,548.3054 L 90.0,630.0 L 90.0,630.0 Z' /></g>
+<g fill='#23934a'>
+<path d='M 90.0,630.0 L 930.0,567.3595 L 853.3356,630.0 L 853.3356,630.0 L 930.0,558.2388 L 90.0,630.0 L 90.0,630.0 Z' /></g>
+<g fill='#1c16f8'>
+<path d='M 90.0,630.0 L 930.0,576.2092 L 853.3356,630.0 L 853.3356,630.0 L 930.0,567.3595 L 90.0,630.0 L 90.0,630.0 Z' /></g>
+<g fill='#3be450'>
+<path d='M 90.0,630.0 L 930.0,582.1241 L 853.3356,630.0 L 853.3356,630.0 L 930.0,576.2092 L 90.0,630.0 L 90.0,630.0 Z' /></g>
+<g fill='#3e9c15'>
+<path d='M 90.0,630.0 L 930.0,586.3232 L 853.3356,630.0 L 853.3356,630.0 L 930.0,582.1241 L 90.0,630.0 L 90.0,630.0 Z' /></g>
+<g fill='#c17e57'>
+<path d='M 90.0,630.0 L 930.0,589.3032 L 853.3356,630.0 L 853.3356,630.0 L 930.0,586.3232 L 90.0,630.0 L 90.0,630.0 Z' /></g>
+<g fill='#d7168d'>
+<path d='M 90.0,630.0 L 930.0,592.2832 L 853.3356,630.0 L 853.3356,630.0 L 930.0,589.3032 L 90.0,630.0 L 90.0,630.0 Z' /></g>
+<g fill='#bf3725'>
+<path d='M 90.0,630.0 L 930.0,630.0 L 853.3356,630.0 L 853.3356,630.0 L 930.0,592.2832 L 90.0,630.0 L 90.0,630.0 Z' /></g>
+<g fill='#8429ad'>
+<rect x='990.0' y='93.375' width='27.0' height='27.0' />
+</g>
+<text stroke='none' x='1023.75' y='110.25' font-size='15.0' text-anchor='start'>MAIN</text>
+<g fill='#0d42aa'>
+<rect x='990.0' y='127.125' width='27.0' height='27.0' />
+</g>
+<text stroke='none' x='1023.75' y='144.0' font-size='15.0' text-anchor='start'>(25446)PINNED</text>
+<g fill='#68e25c'>
+<rect x='990.0' y='160.875' width='27.0' height='27.0' />
+</g>
+<text stroke='none' x='1023.75' y='177.75' font-size='15.0' text-anchor='start'>(51147)op_m1/op_m1/op_m2/Core.CodeGraph.vldxMR/vldxMR...</text>
+<g fill='#f95fb6'>
+<rect x='990.0' y='194.625' width='27.0' height='27.0' />
+</g>
+<text stroke='none' x='1023.75' y='211.5' font-size='15.0' text-anchor='start'>(51114)op_m1/op_m1/op_m2/Core.CodeGraph.vldxMR/vldxMR...</text>
+<g fill='#3ac5b6'>
+<rect x='990.0' y='228.375' width='27.0' height='27.0' />
+</g>
+<text stroke='none' x='1023.75' y='245.25' font-size='15.0' text-anchor='start'>(51081)op_m1/op_m1/op_m2/Core.CodeGraph.vldxMR/vldxMR...</text>
+<g fill='#278ea7'>
+<rect x='990.0' y='262.125' width='27.0' height='27.0' />
+</g>
+<text stroke='none' x='1023.75' y='279.0' font-size='15.0' text-anchor='start'>(60913)fastInsEdge.addP'/fastInsEdge.g2/fastInsEdge/i...</text>
+<g fill='#02baf3'>
+<rect x='990.0' y='295.875' width='27.0' height='27.0' />
+</g>
+<text stroke='none' x='1023.75' y='312.75' font-size='15.0' text-anchor='start'>(51286)cgbAddOverwrite/cgbAddOverwrite/op_m1/op_m1/op...</text>
+<g fill='#158d73'>
+<rect x='990.0' y='329.625' width='27.0' height='27.0' />
+</g>
+<text stroke='none' x='1023.75' y='346.5' font-size='15.0' text-anchor='start'>(60865)fastInsEdge.g2/fastInsEdge/insEdges/mkGraph/cg...</text>
+<g fill='#61ba31'>
+<rect x='990.0' y='363.375' width='27.0' height='27.0' />
+</g>
+<text stroke='none' x='1023.75' y='380.25' font-size='15.0' text-anchor='start'>(51039)op_m1/op_m1/op_m2/Core.CodeGraph.vldxMR/vldxMR...</text>
+<g fill='#23934a'>
+<rect x='990.0' y='397.125' width='27.0' height='27.0' />
+</g>
+<text stroke='none' x='1023.75' y='414.0' font-size='15.0' text-anchor='start'>(60907)fastInsEdge.addS'/fastInsEdge.g1/fastInsEdge/i...</text>
+<g fill='#1c16f8'>
+<rect x='990.0' y='430.875' width='27.0' height='27.0' />
+</g>
+<text stroke='none' x='1023.75' y='447.75' font-size='15.0' text-anchor='start'>(51419)cgbAddOverwrite/cgbAddOverwrite/op_m1/op_m1/op...</text>
+<g fill='#3be450'>
+<rect x='990.0' y='464.625' width='27.0' height='27.0' />
+</g>
+<text stroke='none' x='1023.75' y='481.5' font-size='15.0' text-anchor='start'>(51543)cgbAddOverwrite/cgbAddOverwrite/op_m1/op_m1/op...</text>
+<g fill='#3e9c15'>
+<rect x='990.0' y='498.375' width='27.0' height='27.0' />
+</g>
+<text stroke='none' x='1023.75' y='515.25' font-size='15.0' text-anchor='start'>(51270)cgbAddInstruction.\/liftA2/cgbSequence/moduloB...</text>
+<g fill='#c17e57'>
+<rect x='990.0' y='532.125' width='27.0' height='27.0' />
+</g>
+<text stroke='none' x='1023.75' y='549.0' font-size='15.0' text-anchor='start'>(50941)liftA2/cgbSequence/moduloBlock/createCGM.runCG...</text>
+<g fill='#d7168d'>
+<rect x='990.0' y='565.875' width='27.0' height='27.0' />
+</g>
+<text stroke='none' x='1023.75' y='582.75' font-size='15.0' text-anchor='start'>(51667)cgbAddOverwrite/cgbAddOverwrite/op_m1/op_m1/op...</text>
+<g fill='#bf3725'>
+<rect x='990.0' y='599.625' width='27.0' height='27.0' />
+</g>
+<text stroke='none' x='1023.75' y='616.5' font-size='15.0' text-anchor='start'>(trace elements)</text>
+</g>
+</g>
+</svg>
