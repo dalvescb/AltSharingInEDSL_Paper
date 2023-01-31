@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title><h1 style="font-size:70px; color:#4E03FC">Alternative Methods for Retaining Explicit and Finding Implicit Sharing in Embedded DSLs</h1></title>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@3.9.0/css/reveal.css"/>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@3.9.0/css/theme/sky.css" id="theme"/>
+
+<link rel="stylesheet" href="./reveal_extra.css"/>
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'https://cdn.jsdelivr.net/npm/reveal.js@3.9.0/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide">
+<h1 class="title"><h1 style="font-size:70px; color:#4E03FC">Alternative Methods for Retaining Explicit and Finding Implicit Sharing in Embedded DSLs</h1></h1><h2 class="author"><h1 style="font-size:30px">Curtis D'Alves</h1></h2><h2 class="date"><h1 style="font-size:30px">2022-01-15</h1></h2>
+</section>
+
+<section>
+<section id="slide-orgf8dd58f">
+<h2 id="orgf8dd58f"><h1 style="font-size:70px; color:#4E03FC">Overview</h1></h2>
+<ul>
+<li>I'm going to present a <font color="#4E03FC">new method for detecting sharing</font> in embedded DSLs
+<ul>
+<li>I'll start by giving a <font color="#4E03FC">small example</font> of an embedded DSL</li>
+<li>Identify the <font color="#4E03FC">sharing problem</font> that occurs</li>
+<li>Present <font color="#4E03FC">current solutions</font> with their advantages/shortcomings</li>
+<li>Explain my <font color="#4E03FC">new method</font> with it's advantages/shortcomings</li>
+
+</ul></li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-org7e40f6b">
+<h2 id="org7e40f6b"><h1 style="font-size:70px; color:#4E03FC">Embedded Domain Specific Languages</h1></h2>
+<ul>
+<li>Consider the naive eDSL implemented as a <font color="#4E03FC">algebriac data type</font>:</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #3a81c3; font-weight: bold;">data</span> <span style="color: #ba2f59; font-weight: bold;">Exp</span>
+  <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">Add</span> <span style="color: #ba2f59; font-weight: bold;">Exp</span> <span style="color: #ba2f59; font-weight: bold;">Exp</span>
+  <span style="color: #715ab1;">|</span> <span style="color: #ba2f59; font-weight: bold;">Variable</span> <span style="color: #ba2f59; font-weight: bold;">String</span>
+  <span style="color: #715ab1;">|</span> <span style="color: #ba2f59; font-weight: bold;">Constant</span> <span style="color: #ba2f59; font-weight: bold;">Int</span>
+</pre>
+</div>
+
+<ul>
+<li>Expressions can be constructed in the eDSL like so</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #6c3163; font-weight: bold;">expr</span> <span style="color: #715ab1;">=</span>
+  <span style="color: #3a81c3; font-weight: bold;">let</span>
+    exp0 <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">Add</span> <span style="color: #3a81c3;">(</span><span style="color: #ba2f59; font-weight: bold;">Variable</span> <span style="color: #2d9574;">"x"</span><span style="color: #3a81c3;">)</span> <span style="color: #3a81c3;">(</span><span style="color: #ba2f59; font-weight: bold;">Constant</span> <span style="color: #4e3163;">0</span><span style="color: #3a81c3;">)</span>
+  <span style="color: #3a81c3; font-weight: bold;">in</span> <span style="color: #ba2f59; font-weight: bold;">Add</span> exp0 exp0
+</pre>
+</div>
+
+</section>
+<section id="slide-org2c31705">
+<h3 id="org2c31705"><h1 style="font-size:70px; color:#4E03FC">Implementing eDSL Functionality</h1></h3>
+<ul>
+<li>DSL designers will commonly implement functionality like evaluation</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #6c3163; font-weight: bold;">eval</span> <span style="color: #3a81c3;">(</span><span style="color: #ba2f59; font-weight: bold;">Add</span> e0 e1<span style="color: #3a81c3;">)</span> varMap <span style="color: #715ab1;">=</span> eval e0 <span style="color: #715ab1;">+</span> eval e1
+<span style="color: #6c3163; font-weight: bold;">eval</span> <span style="color: #3a81c3;">(</span><span style="color: #ba2f59; font-weight: bold;">Variable</span> lbl<span style="color: #3a81c3;">)</span> varMap <span style="color: #715ab1;">=</span> lookup lbl varMap
+<span style="color: #6c3163; font-weight: bold;">eval</span> <span style="color: #3a81c3;">(</span><span style="color: #ba2f59; font-weight: bold;">Constant</span> c<span style="color: #3a81c3;">)</span> varMap <span style="color: #715ab1;">=</span> c
+</pre>
+</div>
+
+<ul>
+<li>Or pretty printing</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #6c3163; font-weight: bold;">pretty</span> <span style="color: #3a81c3;">(</span><span style="color: #ba2f59; font-weight: bold;">Add</span> e0 e1<span style="color: #3a81c3;">)</span> <span style="color: #715ab1;">=</span> <span style="color: #2d9574;">"("</span><span style="color: #715ab1;">++</span>pretty e0<span style="color: #715ab1;">++</span><span style="color: #2d9574;">") + ("</span><span style="color: #715ab1;">++</span>pretty e1<span style="color: #715ab1;">++</span><span style="color: #2d9574;">")"</span>
+<span style="color: #6c3163; font-weight: bold;">pretty</span> <span style="color: #3a81c3;">(</span><span style="color: #ba2f59; font-weight: bold;">Variable</span> lbl<span style="color: #3a81c3;">)</span> <span style="color: #715ab1;">=</span> lbl
+<span style="color: #6c3163; font-weight: bold;">pretty</span> <span style="color: #3a81c3;">(</span><span style="color: #ba2f59; font-weight: bold;">Constant</span> c<span style="color: #3a81c3;">)</span> <span style="color: #715ab1;">=</span> show c
+</pre>
+</div>
+
+</section>
+<section id="slide-org9e2a5bf">
+<h3 id="org9e2a5bf"><h1 style="font-size:70px; color:#4E03FC">Finally Tagless Style</h1></h3>
+<ul>
+<li>Data type based eDSL's have an <font color="#4E03FC">extensibility issue</font>, you can't extend the DSL
+operations without directly modifying the core library</li>
+
+<li>We can redefine our eDSL in <font color="#4E03FC">Finally Tagless Style</font> (of Carette et al.) to solve this issue</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #3a81c3; font-weight: bold;">class</span> <span style="color: #ba2f59; font-weight: bold;">Exp</span> repr <span style="color: #3a81c3; font-weight: bold;">where</span>
+  variable <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">String</span> <span style="color: #715ab1;">-&gt;</span> repr <span style="color: #ba2f59; font-weight: bold;">Int</span>
+  constant <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">String</span> <span style="color: #715ab1;">-&gt;</span> repr <span style="color: #ba2f59; font-weight: bold;">Int</span>
+  add <span style="color: #715ab1;">::</span> repr <span style="color: #ba2f59; font-weight: bold;">Int</span> <span style="color: #715ab1;">-&gt;</span> repr <span style="color: #ba2f59; font-weight: bold;">Int</span> <span style="color: #715ab1;">-&gt;</span> repr <span style="color: #ba2f59; font-weight: bold;">Int</span>
+</pre>
+</div>
+
+</section>
+<section id="slide-org0e2d748">
+<h3 id="org0e2d748"><h1 style="font-size:70px; color:#4E03FC">Generating an AST from Finally Tagless</h1></h3>
+<ul>
+<li>We can easily <font color="#4E03FC">generate an AST</font> from our new interface</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #3a81c3; font-weight: bold;">data</span> <span style="color: #ba2f59; font-weight: bold;">AST</span> a
+  <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">Op2</span> <span style="color: #ba2f59; font-weight: bold;">String</span> <span style="color: #3a81c3;">(</span><span style="color: #ba2f59; font-weight: bold;">AST</span> a<span style="color: #3a81c3;">)</span> <span style="color: #3a81c3;">(</span><span style="color: #ba2f59; font-weight: bold;">AST</span> a<span style="color: #3a81c3;">)</span>
+  <span style="color: #715ab1;">|</span> <span style="color: #ba2f59; font-weight: bold;">Variable</span> <span style="color: #ba2f59; font-weight: bold;">String</span>
+  <span style="color: #715ab1;">|</span> <span style="color: #ba2f59; font-weight: bold;">Constant</span> a
+
+<span style="color: #3a81c3; font-weight: bold;">instance</span> <span style="color: #ba2f59; font-weight: bold;">Exp</span> <span style="color: #ba2f59; font-weight: bold;">AST</span> <span style="color: #3a81c3; font-weight: bold;">where</span>
+  add <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">Op2</span> <span style="color: #2d9574;">"Add"</span>
+  variable <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">Variable</span>
+  constant <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">Constant</span>
+</pre>
+</div>
+
+<ul>
+<li>Or we can generate more <font color="#4E03FC">generic graph strutures</font> (bipartite graphs,
+hypergraphs, etc)</li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-org647db15">
+<h2 id="org647db15"><h1 style="font-size:70px; color:#4E03FC">The Observable Sharing Problem</h1></h2>
+<ul>
+<li>Consider the following DSL code</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #6c3163; font-weight: bold;">expr</span> <span style="color: #715ab1;">=</span>
+  <span style="color: #3a81c3; font-weight: bold;">let</span>
+    exp0 <span style="color: #715ab1;">=</span> add <span style="color: #3a81c3;">(</span>variable <span style="color: #2d9574;">"x"</span><span style="color: #3a81c3;">)</span> <span style="color: #3a81c3;">(</span>constant <span style="color: #4e3163;">0</span><span style="color: #3a81c3;">)</span>
+  <span style="color: #3a81c3; font-weight: bold;">in</span> add expr0 expr0
+</pre>
+</div>
+
+<ul>
+<li>It generates the <font color="#4E03FC">Abstract Syntax Tree</font></li>
+
+</ul>
+
+<div id="orgd3d8859" class="figure">
+<p><img src="AST0.png" alt="AST0.png" />
+</p>
+</div>
+
+
+</section>
+<section id="slide-orgc9281cb">
+<h3 id="orgc9281cb"><h1 style="font-size:70px; color:#4E03FC">The Observable Sharing Problem</h1></h3>
+<ul>
+<li>Or does it generate the <font color="#4E03FC">Directed Acyclic Graph</font>?</li>
+
+</ul>
+
+<div id="org23ac326" class="figure">
+<p><img src="AST1.png" alt="AST1.png" width="15%" />
+</p>
+</div>
+
+</section>
+<section id="slide-org87826ab">
+<h3 id="org87826ab"><h1 style="font-size:70px; color:#4E03FC">When Haskell's Sharing Is Insufficient</h1></h3>
+<ul>
+<li>What if we want to <code>perform code generation</code>, for example</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #715ab1;">&gt;</span> <span style="color: #6c3163; font-weight: bold;">codegen</span> <span style="color: #3a81c3; font-weight: bold;">[]</span> expr <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">AST</span> <span style="color: #ba2f59; font-weight: bold;">Float</span>
+<span style="color: #ba2f59; font-weight: bold;">CodeGen</span> <span style="color: #3a81c3;">(</span><span style="color: #6c3163;">[</span><span style="color: #2d9574;">"exp0 = x + 0"</span>
+         ,<span style="color: #2d9574;">"exp1 = exp0 + exp0"</span><span style="color: #6c3163;">]</span><span style="color: #3a81c3;">)</span>
+</pre>
+</div>
+
+<ul>
+<li>Creating such a code generator over an AST will involve having to <font color="#4E03FC">identify common subexpressions</font></li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #6c3163; font-weight: bold;">codegen</span> codeList <span style="color: #3a81c3;">(</span><span style="color: #ba2f59; font-weight: bold;">Op2</span> lbl e0 e1<span style="color: #3a81c3;">)</span> <span style="color: #715ab1;">=</span> <span style="color: #715ab1;">...</span>
+</pre>
+</div>
+
+<ul>
+<li>We need to create references for e0,e1, how do we identify if they are the same?</li>
+
+</ul>
+
+</section>
+<section id="slide-orge9d680b">
+<h3 id="orge9d680b"><h1 style="font-size:70px; color:#4E03FC">Generating a Directed Acyclic Graph</h1></h3>
+<ul>
+<li>To observe sharing, we need a <font color="#4E03FC">Directed Acyclic Graph</font> (i.e., DAG)</li>
+
+<li>But how would we generate a DAG that explicitly identifies sharing</li>
+
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-haskell">
+<span style="color: #3a81c3; font-weight: bold;">type</span> <span style="color: #ba2f59; font-weight: bold;">NodeId</span> <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">Int</span>
+<span style="color: #3a81c3; font-weight: bold;">data</span> <span style="color: #ba2f59; font-weight: bold;">Node</span> a <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">NConst</span> a
+            <span style="color: #715ab1;">|</span> <span style="color: #ba2f59; font-weight: bold;">NVar</span> <span style="color: #ba2f59; font-weight: bold;">String</span>
+            <span style="color: #715ab1;">|</span> <span style="color: #ba2f59; font-weight: bold;">NAdd</span> <span style="color: #ba2f59; font-weight: bold;">NodeId</span> <span style="color: #ba2f59; font-weight: bold;">NodeId</span>
+
+<span style="color: #3a81c3; font-weight: bold;">newtype</span> <span style="color: #ba2f59; font-weight: bold;">DAG</span> a <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">Map</span> <span style="color: #ba2f59; font-weight: bold;">NodeId</span> <span style="color: #3a81c3;">(</span><span style="color: #ba2f59; font-weight: bold;">Node</span> a<span style="color: #3a81c3;">)</span>
+
+<span style="color: #3a81c3; font-weight: bold;">instance</span> <span style="color: #ba2f59; font-weight: bold;">Exp</span> <span style="color: #ba2f59; font-weight: bold;">DAG</span> <span style="color: #3a81c3; font-weight: bold;">where</span>
+  variable x <span style="color: #715ab1;">=</span> <span style="color: #2aa1ae; background-color: #ecf3ec;">-- </span><span style="color: #2aa1ae; background-color: #ecf3ec;">how do we generate a unique NodeID?</span>
+  <span style="color: #715ab1;">...</span>
+</pre>
+</div>
+
+</section>
+<section id="slide-org942100d">
+<h3 id="org942100d"><h1 style="font-size:70px; color:#4E03FC">Generating Unique Identifiers</h1></h3>
+<ul>
+<li>We can use the <font color="#4E03FC">State Monad</font> to keep track of a counter and create a
+<font color="#4E03FC">unique NodeId</font></li>
+
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-haskell">
+<span style="color: #3a81c3; font-weight: bold;">newtype</span> <span style="color: #ba2f59; font-weight: bold;">Graph</span> a <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">Graph</span> <span style="color: #3a81c3;">{</span> unGraph <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">State</span> <span style="color: #6c3163;">(</span><span style="color: #ba2f59; font-weight: bold;">DAG</span>,<span style="color: #ba2f59; font-weight: bold;">Int</span><span style="color: #6c3163;">)</span> <span style="color: #ba2f59; font-weight: bold;">NodeId</span> <span style="color: #3a81c3;">}</span>
+
+<span style="color: #3a81c3; font-weight: bold;">instance</span> <span style="color: #ba2f59; font-weight: bold;">Exp</span> <span style="color: #ba2f59; font-weight: bold;">Graph</span> <span style="color: #3a81c3; font-weight: bold;">where</span>
+  add e1 e2 <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">Graph</span> <span style="color: #3a81c3;">(</span><span style="color: #3a81c3; font-weight: bold;">do</span> h1 <span style="color: #715ab1;">&lt;-</span> unGraph e1
+                        h2 <span style="color: #715ab1;">&lt;-</span> unGraph e2
+                        insertNode <span style="color: #715ab1;">$</span> <span style="color: #ba2f59; font-weight: bold;">NAdd</span> h1 h2<span style="color: #3a81c3;">)</span>
+  <span style="color: #715ab1;">...</span>
+<span style="color: #6c3163; font-weight: bold;">insertNode</span> n <span style="color: #715ab1;">=</span> <span style="color: #3a81c3; font-weight: bold;">do</span> <span style="color: #3a81c3;">(</span><span style="color: #ba2f59; font-weight: bold;">DAG</span> m,cnt<span style="color: #3a81c3;">)</span> <span style="color: #715ab1;">&lt;-</span> get
+                  put <span style="color: #3a81c3;">(</span><span style="color: #ba2f59; font-weight: bold;">DAG</span> <span style="color: #6c3163;">(</span>insert cnt n m<span style="color: #6c3163;">)</span>,cnt<span style="color: #715ab1;">+</span><span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span>
+</pre>
+</div>
+
+<ul>
+<li>However, this still doesn't identify common subexpressions</li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-org4f15226">
+<h2 id="org4f15226"><h1 style="font-size:70px; color:#4E03FC">Previous Work: Hash-Consing</h1></h2>
+<ul>
+<li><font color="#4E03FC">Oleg Kiselyov</font> presented a solution to this via the method of hash-consing</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #3a81c3; font-weight: bold;">instance</span> <span style="color: #ba2f59; font-weight: bold;">Exp</span> <span style="color: #ba2f59; font-weight: bold;">Graph</span> <span style="color: #3a81c3; font-weight: bold;">where</span>
+  add e1 e2 <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">Graph</span> <span style="color: #3a81c3;">(</span><span style="color: #3a81c3; font-weight: bold;">do</span> h1 <span style="color: #715ab1;">&lt;-</span> unGraph e1
+                        h2 <span style="color: #715ab1;">&lt;-</span> unGraph e2
+                        hashcons <span style="color: #715ab1;">$</span> <span style="color: #ba2f59; font-weight: bold;">NAdd</span> h1 h2<span style="color: #3a81c3;">)</span>
+  <span style="color: #715ab1;">...</span>
+<span style="color: #6c3163; font-weight: bold;">hashcons</span> <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">Node</span> <span style="color: #715ab1;">-&gt;</span> <span style="color: #ba2f59; font-weight: bold;">State</span> <span style="color: #ba2f59; font-weight: bold;">DAG</span> <span style="color: #ba2f59; font-weight: bold;">NodeID</span>
+<span style="color: #6c3163; font-weight: bold;">hashcons</span> e <span style="color: #715ab1;">=</span> <span style="color: #3a81c3; font-weight: bold;">do</span>
+  <span style="color: #3a81c3;">(</span><span style="color: #ba2f59; font-weight: bold;">DAG</span> m,cnt<span style="color: #3a81c3;">)</span> <span style="color: #715ab1;">&lt;-</span> get
+  <span style="color: #3a81c3; font-weight: bold;">case</span> lookup_key e m <span style="color: #3a81c3; font-weight: bold;">of</span>
+    <span style="color: #ba2f59; font-weight: bold;">Nothing</span> <span style="color: #715ab1;">-&gt;</span> <span style="color: #3a81c3; font-weight: bold;">let</span> <span style="color: #3a81c3;">(</span>k,m'<span style="color: #3a81c3;">)</span> <span style="color: #715ab1;">=</span> insert e m
+               <span style="color: #3a81c3; font-weight: bold;">in</span> put <span style="color: #3a81c3;">(</span><span style="color: #ba2f59; font-weight: bold;">DAG</span> m',cnt<span style="color: #715ab1;">+</span><span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span> <span style="color: #715ab1;">&gt;&gt;</span> return k
+    <span style="color: #ba2f59; font-weight: bold;">Just</span> k <span style="color: #715ab1;">-&gt;</span> return k
+</pre>
+</div>
+
+</section>
+<section id="slide-orgbd90030">
+<h3 id="orgbd90030"><h1 style="font-size:70px; color:#4E03FC">Limitations of Hash-Consing</h1></h3>
+<ul>
+<li>The problem with just Hash-Consing, is every time a value is shared it's <font color="#4E03FC">AST is re-traversed</font>, performing a lookup check at each node</li>
+
+<li>Consider the following example</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #6c3163; font-weight: bold;">addChains</span> <span style="color: #715ab1;">=</span>
+  <span style="color: #3a81c3; font-weight: bold;">let</span>
+    x0 <span style="color: #715ab1;">=</span> variable <span style="color: #2d9574;">"x"</span>
+    x1 <span style="color: #715ab1;">=</span> add x0 x0
+    x2 <span style="color: #715ab1;">=</span> add x1 x1
+    <span style="color: #715ab1;">...</span>
+  <span style="color: #3a81c3; font-weight: bold;">in</span> xn
+</pre>
+</div>
+
+</section>
+<section id="slide-org92a227b">
+<h3 id="org92a227b"><h1 style="font-size:70px; color:#4E03FC">Limitations of HashConsing</h1></h3>
+<ul>
+<li>This leads to an exponential scaling of hash-cons operations
+<img src="hashconscmp.png" alt="hashconscmp.png" /></li>
+
+</ul>
+
+</section>
+<section id="slide-orgd6bf3f3">
+<h3 id="orgd6bf3f3"><h1 style="font-size:70px; color:#4E03FC">Explicit Sharing</h1></h3>
+<ul>
+<li>Kiselyov noted this issue, and proposed a solution, <font color="#4E03FC">explicit sharing</font> via a
+custom let construct</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #3a81c3; font-weight: bold;">class</span> <span style="color: #ba2f59; font-weight: bold;">ExpLet</span> repr <span style="color: #3a81c3; font-weight: bold;">where</span>
+  let_ <span style="color: #715ab1;">::</span> repr a <span style="color: #715ab1;">-&gt;</span> <span style="color: #3a81c3;">(</span>repr a <span style="color: #715ab1;">-&gt;</span> repr b<span style="color: #3a81c3;">)</span> <span style="color: #715ab1;">-&gt;</span> repr b
+
+<span style="color: #3a81c3; font-weight: bold;">instance</span> <span style="color: #ba2f59; font-weight: bold;">ExpLet</span> <span style="color: #ba2f59; font-weight: bold;">Graph</span> <span style="color: #3a81c3; font-weight: bold;">where</span>
+  let_ e f <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">Graph</span> <span style="color: #3a81c3;">(</span><span style="color: #3a81c3; font-weight: bold;">do</span> x <span style="color: #715ab1;">&lt;-</span> unGraph e
+                     unGraph <span style="color: #715ab1;">$</span> f <span style="color: #6c3163;">(</span><span style="color: #ba2f59; font-weight: bold;">Graph</span> <span style="color: #2d9574;">(</span>return x<span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
+</pre>
+</div>
+
+<ul>
+<li>We can now <font color="#4E03FC">redefine the example</font> from before with explicit sharing</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #6c3163; font-weight: bold;">addChains</span> x <span style="color: #715ab1;">=</span>
+  let_ x <span style="color: #3a81c3;">(</span><span style="color: #715ab1;">\</span>x0 <span style="color: #715ab1;">-&gt;</span>
+  let_ <span style="color: #6c3163;">(</span>add x0 x0<span style="color: #6c3163;">)</span>  <span style="color: #6c3163;">(</span><span style="color: #715ab1;">\</span>x1 <span style="color: #715ab1;">-&gt;</span>
+  let_ <span style="color: #2d9574;">(</span>add x1 x1<span style="color: #2d9574;">)</span>  <span style="color: #2d9574;">(</span><span style="color: #715ab1;">\</span>x2 <span style="color: #715ab1;">-&gt;</span>
+   <span style="color: #715ab1;">...</span>
+  <span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
+</pre>
+</div>
+
+</section>
+<section id="slide-org9165715">
+<h3 id="org9165715"><h1 style="font-size:70px; color:#4E03FC">Limitations of Explicit Sharing</h1></h3>
+<ul>
+<li>This method does not work for DSL functions that <font color="#4E03FC">return multiple outputs</font></li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #3a81c3; font-weight: bold;">class</span> <span style="color: #ba2f59; font-weight: bold;">Exp</span> repr <span style="color: #3a81c3; font-weight: bold;">where</span>
+  variable <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">String</span> <span style="color: #715ab1;">-&gt;</span> repr <span style="color: #ba2f59; font-weight: bold;">Int</span>
+  constant <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">String</span> <span style="color: #715ab1;">-&gt;</span> repr <span style="color: #ba2f59; font-weight: bold;">Int</span>
+  add <span style="color: #715ab1;">::</span> repr <span style="color: #ba2f59; font-weight: bold;">Int</span> <span style="color: #715ab1;">-&gt;</span> repr <span style="color: #ba2f59; font-weight: bold;">Int</span> <span style="color: #715ab1;">-&gt;</span> repr <span style="color: #ba2f59; font-weight: bold;">Int</span>
+  novel <span style="color: #715ab1;">::</span> <span style="color: #3a81c3;">(</span>repr <span style="color: #ba2f59; font-weight: bold;">Int</span>,repr <span style="color: #ba2f59; font-weight: bold;">Int</span><span style="color: #3a81c3;">)</span> <span style="color: #715ab1;">-&gt;</span> <span style="color: #3a81c3;">(</span>repr <span style="color: #ba2f59; font-weight: bold;">Int</span>,repr <span style="color: #ba2f59; font-weight: bold;">Int</span><span style="color: #3a81c3;">)</span>
+</pre>
+</div>
+
+<ul>
+<li>The problem is that DAG generation requires <font color="#4E03FC">splitting the state monad in two</font></li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #3a81c3; font-weight: bold;">instance</span> <span style="color: #ba2f59; font-weight: bold;">Exp</span> <span style="color: #ba2f59; font-weight: bold;">Graph</span> <span style="color: #3a81c3; font-weight: bold;">where</span>
+  <span style="color: #715ab1;">...</span>
+  novel e1 e2 <span style="color: #715ab1;">=</span> <span style="color: #3a81c3; font-weight: bold;">let</span>
+     g1 <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">Graph</span> <span style="color: #3a81c3;">(</span><span style="color: #3a81c3; font-weight: bold;">do</span> h1 <span style="color: #715ab1;">&lt;-</span> unGraph e1
+                    h2 <span style="color: #715ab1;">&lt;-</span> unGraph e2
+                    hashcons <span style="color: #715ab1;">$</span> <span style="color: #ba2f59; font-weight: bold;">Novel1</span> h1 h2<span style="color: #3a81c3;">)</span>
+     g2 <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">Graph</span> <span style="color: #3a81c3;">(</span><span style="color: #3a81c3; font-weight: bold;">do</span> h1 <span style="color: #715ab1;">&lt;-</span> unGraph e1
+                    h2 <span style="color: #715ab1;">&lt;-</span> unGraph e2
+                    hashcons <span style="color: #715ab1;">$</span> <span style="color: #ba2f59; font-weight: bold;">Novel2</span> h1 h2<span style="color: #3a81c3;">)</span>
+     <span style="color: #3a81c3; font-weight: bold;">in</span> <span style="color: #3a81c3;">(</span>g1,g2<span style="color: #3a81c3;">)</span>
+</pre>
+</div>
+
+</section>
+</section>
+<section>
+<section id="slide-orge0d5987">
+<h2 id="orge0d5987"><h1 style="font-size:70px; color:#4E03FC">My Method</h1></h2>
+<ul>
+<li>My proposed solution is to build a <font color="#4E03FC">serialized AST using byte strings</font> for each
+node <font color="#4E03FC">alongside the State Monad</font></li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #3a81c3; font-weight: bold;">data</span> <span style="color: #ba2f59; font-weight: bold;">DAG</span> <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">DAG</span> <span style="color: #3a81c3;">{</span> unTrie <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">Trie</span> <span style="color: #6c3163;">(</span><span style="color: #ba2f59; font-weight: bold;">Node</span>,<span style="color: #ba2f59; font-weight: bold;">NodeID</span><span style="color: #6c3163;">)</span>, maxID <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">NodeID</span> <span style="color: #3a81c3;">}</span>
+
+<span style="color: #3a81c3; font-weight: bold;">data</span> <span style="color: #ba2f59; font-weight: bold;">Graph</span> a <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">Graph</span> <span style="color: #3a81c3;">{</span> unGraph <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">State</span> <span style="color: #ba2f59; font-weight: bold;">DAG</span> <span style="color: #ba2f59; font-weight: bold;">NodeID</span>
+                     , stringAST <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">ByteString</span> <span style="color: #3a81c3;">}</span>
+</pre>
+</div>
+
+</section>
+<section id="slide-org50b67b7">
+<h3 id="org50b67b7"><h1 style="font-size:70px; color:#4E03FC">Trie Consing</h1></h3>
+<ul>
+<li>The method also <font color="#4E03FC">performs hash-consing</font></li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #6c3163; font-weight: bold;">triecons</span> <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">ByteString</span> <span style="color: #715ab1;">-&gt;</span> <span style="color: #ba2f59; font-weight: bold;">Node</span> <span style="color: #715ab1;">-&gt;</span> <span style="color: #ba2f59; font-weight: bold;">State</span> <span style="color: #ba2f59; font-weight: bold;">DAG</span> <span style="color: #ba2f59; font-weight: bold;">NodeID</span>
+<span style="color: #6c3163; font-weight: bold;">triecons</span> sAST node <span style="color: #715ab1;">=</span> <span style="color: #3a81c3; font-weight: bold;">do</span>
+  <span style="color: #ba2f59; font-weight: bold;">DAG</span> trie maxID <span style="color: #715ab1;">&lt;-</span> get
+  <span style="color: #3a81c3; font-weight: bold;">case</span> Trie.lookup sAST trie <span style="color: #3a81c3; font-weight: bold;">of</span>
+    <span style="color: #ba2f59; font-weight: bold;">Nothing</span> <span style="color: #715ab1;">-&gt;</span> <span style="color: #3a81c3; font-weight: bold;">let</span> maxID' <span style="color: #715ab1;">=</span> maxID<span style="color: #715ab1;">+</span><span style="color: #4e3163;">1</span>
+                   trie' <span style="color: #715ab1;">=</span> Trie.insert sAST <span style="color: #3a81c3;">(</span>node,maxID'<span style="color: #3a81c3;">)</span> trie
+                <span style="color: #3a81c3; font-weight: bold;">in</span> <span style="color: #3a81c3; font-weight: bold;">do</span> put <span style="color: #715ab1;">$</span> <span style="color: #ba2f59; font-weight: bold;">DAG</span> trie' maxID'
+                      return maxID'
+    <span style="color: #ba2f59; font-weight: bold;">Just</span> <span style="color: #3a81c3;">(</span><span style="color: #3a81c3; font-weight: bold;">_</span>,nodeID<span style="color: #3a81c3;">)</span> <span style="color: #715ab1;">-&gt;</span> return nodeID
+</pre>
+</div>
+
+</section>
+<section id="slide-org1fe394c">
+<h3 id="org1fe394c"><h1 style="font-size:70px; color:#4E03FC">Preventing redundant traversal</h1></h3>
+<ul>
+<li>When we implement DAG generation, we <font color="#4E03FC">build a serialized AST at each node</font></li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #3a81c3; font-weight: bold;">instance</span> <span style="color: #ba2f59; font-weight: bold;">Exp</span> <span style="color: #ba2f59; font-weight: bold;">Graph</span> <span style="color: #3a81c3; font-weight: bold;">where</span>
+  add e1 e2 <span style="color: #715ab1;">=</span> <span style="color: #3a81c3; font-weight: bold;">let</span>
+      sAST <span style="color: #715ab1;">=</span> buildStringAST <span style="color: #2d9574;">"nadd"</span> <span style="color: #3a81c3;">[</span>e1,e2<span style="color: #3a81c3;">]</span>
+      sT <span style="color: #715ab1;">=</span> <span style="color: #3a81c3; font-weight: bold;">do</span> ns <span style="color: #715ab1;">&lt;-</span> seqArgs <span style="color: #3a81c3;">[</span>e1,e2<span style="color: #3a81c3;">]</span>
+              <span style="color: #3a81c3; font-weight: bold;">case</span> ns <span style="color: #3a81c3; font-weight: bold;">of</span>
+                <span style="color: #3a81c3;">[</span>n1,n2<span style="color: #3a81c3;">]</span> <span style="color: #715ab1;">-&gt;</span> triecons sAST <span style="color: #715ab1;">$</span> <span style="color: #ba2f59; font-weight: bold;">NAdd</span> n1 n2
+    <span style="color: #3a81c3; font-weight: bold;">in</span> <span style="color: #ba2f59; font-weight: bold;">Graph</span> sT sAST
+</pre>
+</div>
+
+<ul>
+<li>The key is <font color="#4E03FC">preventing re-traversal of nodes</font></li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #6c3163; font-weight: bold;">seqArgs</span> <span style="color: #715ab1;">::</span> <span style="color: #3a81c3;">[</span><span style="color: #ba2f59; font-weight: bold;">Graph</span> a<span style="color: #3a81c3;">]</span> <span style="color: #715ab1;">-&gt;</span> <span style="color: #ba2f59; font-weight: bold;">State</span> <span style="color: #ba2f59; font-weight: bold;">DAG</span> <span style="color: #3a81c3;">[</span><span style="color: #ba2f59; font-weight: bold;">NodeID</span><span style="color: #3a81c3;">]</span>
+<span style="color: #6c3163; font-weight: bold;">seqArgs</span> inps <span style="color: #715ab1;">=</span> <span style="color: #3a81c3; font-weight: bold;">let</span>
+    seqArg <span style="color: #3a81c3;">(</span><span style="color: #ba2f59; font-weight: bold;">Graph</span> sT sAST<span style="color: #3a81c3;">)</span> <span style="color: #715ab1;">=</span>
+      <span style="color: #3a81c3; font-weight: bold;">do</span> <span style="color: #ba2f59; font-weight: bold;">DAG</span> trie <span style="color: #3a81c3; font-weight: bold;">_</span> <span style="color: #715ab1;">&lt;-</span> get
+         <span style="color: #3a81c3; font-weight: bold;">case</span> Trie.lookup sAST  trie <span style="color: #3a81c3; font-weight: bold;">of</span>
+           <span style="color: #ba2f59; font-weight: bold;">Nothing</span> <span style="color: #715ab1;">-&gt;</span> sT
+           <span style="color: #ba2f59; font-weight: bold;">Just</span> <span style="color: #3a81c3;">(</span><span style="color: #3a81c3; font-weight: bold;">_</span>,nodeID<span style="color: #3a81c3;">)</span> <span style="color: #715ab1;">-&gt;</span> return nodeID
+  <span style="color: #3a81c3; font-weight: bold;">in</span> sequence <span style="color: #715ab1;">$</span> map seqArg inps
+</pre>
+</div>
+
+</section>
+<section id="slide-orgc029071">
+<h3 id="orgc029071"><h1 style="font-size:70px; color:#4E03FC">Limitations of Our Method</h1></h3>
+<ul>
+<li>The serialized AST can <font color="#4E03FC">consume a lot of memory</font></li>
+
+<li>The <font color="#4E03FC">addChains example</font> from before now has exponential scaling in memory
+instead of computation</li>
+
+</ul>
+
+</section>
+<section id="slide-org9bdb902">
+<h3 id="org9bdb902"><h1 style="font-size:70px; color:#4E03FC">Explicit Sharing</h1></h3>
+<ul>
+<li>Just like Kiselyov, we add a method for <font color="#4E03FC">explicit sharing</font> (this time of memory)</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #3a81c3; font-weight: bold;">class</span> <span style="color: #ba2f59; font-weight: bold;">Substitute</span> repr <span style="color: #3a81c3; font-weight: bold;">where</span>
+  subT <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">ByteString</span> <span style="color: #715ab1;">-&gt;</span> repr a <span style="color: #715ab1;">-&gt;</span> repr a
+<span style="color: #3a81c3; font-weight: bold;">instance</span> <span style="color: #ba2f59; font-weight: bold;">Substitute</span> <span style="color: #ba2f59; font-weight: bold;">Graph</span> <span style="color: #3a81c3; font-weight: bold;">where</span>
+  subT s' <span style="color: #3a81c3;">(</span><span style="color: #ba2f59; font-weight: bold;">Graph</span> g s <span style="color: #3a81c3; font-weight: bold;">_</span><span style="color: #3a81c3;">)</span> <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">Graph</span> g s' <span style="color: #3a81c3;">(</span><span style="color: #ba2f59; font-weight: bold;">Just</span> s<span style="color: #3a81c3;">)</span>
+
+<span style="color: #6c3163; font-weight: bold;">exampleSubT</span> x y <span style="color: #715ab1;">=</span> <span style="color: #3a81c3; font-weight: bold;">let</span>
+  z <span style="color: #715ab1;">=</span> subT <span style="color: #2d9574;">"z"</span> <span style="color: #3a81c3;">(</span>add x y<span style="color: #3a81c3;">)</span>
+  <span style="color: #3a81c3; font-weight: bold;">in</span> add z z
+</pre>
+</div>
+
+</section>
+<section id="slide-orge344bb0">
+<h3 id="orge344bb0"><h1 style="font-size:70px; color:#4E03FC">Mapping Substitutions</h1></h3>
+<ul>
+<li>This requires us to keep a <font color="#4E03FC">map of substitutions</font> along with our DAG</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #3a81c3; font-weight: bold;">data</span> <span style="color: #ba2f59; font-weight: bold;">DAG</span> <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">DAG</span> <span style="color: #3a81c3;">{</span> dagTrie <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">Trie</span> <span style="color: #6c3163;">(</span><span style="color: #ba2f59; font-weight: bold;">Node</span>,<span style="color: #ba2f59; font-weight: bold;">NodeID</span><span style="color: #6c3163;">)</span>
+               , dagSubMap <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">Map</span> <span style="color: #ba2f59; font-weight: bold;">ByteString</span> <span style="color: #ba2f59; font-weight: bold;">ByteString</span>
+               , dagMaxID <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">Int</span> <span style="color: #3a81c3;">}</span> 
+
+<span style="color: #3a81c3; font-weight: bold;">data</span> <span style="color: #ba2f59; font-weight: bold;">Graph</span> a <span style="color: #715ab1;">=</span> <span style="color: #ba2f59; font-weight: bold;">Graph</span> <span style="color: #3a81c3;">{</span> unGraph <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">State</span> <span style="color: #ba2f59; font-weight: bold;">DAG</span> <span style="color: #ba2f59; font-weight: bold;">NodeID</span>
+                     , unStringAST <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">ByteString</span>
+                     , unSubT <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">Maybe</span> <span style="color: #ba2f59; font-weight: bold;">ByteString</span> <span style="color: #3a81c3;">}</span>
+</pre>
+</div>
+
+</section>
+</section>
+<section>
+<section id="slide-orgdab4147">
+<h2 id="orgdab4147"><h1 style="font-size:70px; color:#4E03FC">Comparing our methods: addChains</h1></h2>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">HashCons time</td>
+<td class="org-left">0.0 secs</td>
+<td class="org-left">0.0 secs</td>
+<td class="org-left">0.01 secs</td>
+<td class="org-left">0.03 secs</td>
+</tr>
+
+<tr>
+<td class="org-left">HashCons alloc</td>
+<td class="org-left">0.62 MB</td>
+<td class="org-left">0.74 MB</td>
+<td class="org-left">28.67 MB</td>
+<td class="org-left">155.99 MB</td>
+</tr>
+
+<tr>
+<td class="org-left">TrieCons time</td>
+<td class="org-left">0.0 secs</td>
+<td class="org-left">0.0 secs</td>
+<td class="org-left">0.03 secs</td>
+<td class="org-left">0.16 secs</td>
+</tr>
+
+<tr>
+<td class="org-left">TrieCons alloc</td>
+<td class="org-left">1.77 MB</td>
+<td class="org-left">2.33 MB</td>
+<td class="org-left">129.14 MB</td>
+<td class="org-left">723.43 MB</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section id="slide-org08de6bc">
+<h3 id="org08de6bc"><h1 style="font-size:70px; color:#4E03FC">Real World Benchmarks</h1></h3>
+<ul>
+<li>We implemented both methods on our DSL <font color="#4E03FC">COCONUT</font>, a high level assembly
+language similar to LLVM</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #3a81c3; font-weight: bold;">class</span> <span style="color: #ba2f59; font-weight: bold;">CoreISA</span> repr <span style="color: #3a81c3; font-weight: bold;">where</span>
+  <span style="color: #da8b55;">-- | Load from memory into a GPR</span>
+  ldMR <span style="color: #715ab1;">::</span> repr <span style="color: #ba2f59; font-weight: bold;">MR</span> <span style="color: #715ab1;">-&gt;</span> <span style="color: #ba2f59; font-weight: bold;">Int</span> <span style="color: #715ab1;">-&gt;</span> <span style="color: #3a81c3;">(</span>repr <span style="color: #ba2f59; font-weight: bold;">GPR</span>, repr <span style="color: #ba2f59; font-weight: bold;">MR</span><span style="color: #3a81c3;">)</span>
+  <span style="color: #da8b55;">-- | Store a GPR into memory</span>
+  stdMR   <span style="color: #715ab1;">::</span> repr <span style="color: #ba2f59; font-weight: bold;">MR</span> <span style="color: #715ab1;">-&gt;</span> <span style="color: #ba2f59; font-weight: bold;">Int</span> <span style="color: #715ab1;">-&gt;</span> repr <span style="color: #ba2f59; font-weight: bold;">GPR</span> <span style="color: #715ab1;">-&gt;</span> repr <span style="color: #ba2f59; font-weight: bold;">MR</span>
+  <span style="color: #da8b55;">-- | Bitwise NAND of two 64-bit general-purpose registers (NNGRK)</span>
+  nandG   <span style="color: #715ab1;">::</span> repr <span style="color: #ba2f59; font-weight: bold;">GPR</span> <span style="color: #715ab1;">-&gt;</span> repr <span style="color: #ba2f59; font-weight: bold;">GPR</span> <span style="color: #715ab1;">-&gt;</span> repr <span style="color: #ba2f59; font-weight: bold;">GPR</span>
+  <span style="color: #da8b55;">-- | Bitwise NOR of two 64-bit general-purpose registers (NOGRK)</span>
+  norG    <span style="color: #715ab1;">::</span> repr <span style="color: #ba2f59; font-weight: bold;">GPR</span> <span style="color: #715ab1;">-&gt;</span> repr <span style="color: #ba2f59; font-weight: bold;">GPR</span> <span style="color: #715ab1;">-&gt;</span> repr <span style="color: #ba2f59; font-weight: bold;">GPR</span>
+  <span style="color: #da8b55;">-- | Bitwise NXOR of two 64-bit general-purpose registers (NXGRK)</span>
+  eqvG    <span style="color: #715ab1;">::</span> repr <span style="color: #ba2f59; font-weight: bold;">GPR</span> <span style="color: #715ab1;">-&gt;</span> repr <span style="color: #ba2f59; font-weight: bold;">GPR</span> <span style="color: #715ab1;">-&gt;</span> repr <span style="color: #ba2f59; font-weight: bold;">GPR</span>
+  <span style="color: #da8b55;">-- | Addition of two 64-bit general-purpose registers (AGRK)</span>
+  addG    <span style="color: #715ab1;">::</span> repr <span style="color: #ba2f59; font-weight: bold;">GPR</span> <span style="color: #715ab1;">-&gt;</span> repr <span style="color: #ba2f59; font-weight: bold;">GPR</span> <span style="color: #715ab1;">-&gt;</span> repr <span style="color: #ba2f59; font-weight: bold;">GPR</span>
+  <span style="color: #715ab1;">...</span>
+</pre>
+</div>
+
+</section>
+<section id="slide-org33b0d03">
+<h3 id="org33b0d03"><h1 style="font-size:70px; color:#4E03FC">Coconut DSL</h1></h3>
+<ul>
+<li>We can use this language to encode basic blocks in <font color="#4E03FC">Single Static Assignment</font>
+form</li>
+
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span style="color: #6c3163; font-weight: bold;">add2</span> <span style="color: #715ab1;">::</span> <span style="color: #ba2f59; font-weight: bold;">CoreISA</span> repr <span style="color: #715ab1;">=&gt;</span> <span style="color: #3a81c3;">(</span>repr <span style="color: #ba2f59; font-weight: bold;">GPR</span>, repr <span style="color: #ba2f59; font-weight: bold;">GPR</span><span style="color: #3a81c3;">)</span> <span style="color: #715ab1;">-&gt;</span> <span style="color: #3a81c3;">(</span>repr <span style="color: #ba2f59; font-weight: bold;">GPR</span>, repr <span style="color: #ba2f59; font-weight: bold;">GPR</span><span style="color: #3a81c3;">)</span>
+<span style="color: #6c3163; font-weight: bold;">add2</span> <span style="color: #3a81c3;">(</span>a, b<span style="color: #3a81c3;">)</span> <span style="color: #715ab1;">=</span>
+    <span style="color: #3a81c3; font-weight: bold;">let</span>
+        a' <span style="color: #715ab1;">=</span> addG a b
+        b' <span style="color: #715ab1;">=</span> addG a' b
+    <span style="color: #3a81c3; font-weight: bold;">in</span> <span style="color: #3a81c3;">(</span>a', b'<span style="color: #3a81c3;">)</span>
+</pre>
+</div>
+
+
+</section>
+<section id="slide-org7f616c7">
+<h3 id="org7f616c7"><h1 style="font-size:70px; color:#4E03FC">HashCons vs TrieCons</h1></h3>
+
+<div id="org47bc3ca" class="figure">
+<p><img src="cos_profile_hashcons.png" alt="cos_profile_hashcons.png" width="100%" />
+</p>
+</div>
+
+</section>
+<section id="slide-orgd81f984">
+<h3 id="orgd81f984"><h1 style="font-size:70px; color:#4E03FC">HashCons vs TrieCons</h1></h3>
+
+<div id="orgd9b592d" class="figure">
+<p><img src="cos_profile_triecons.png" alt="cos_profile_triecons.png" width="100%" />
+</p>
+</div>
+
+</section>
+<section id="slide-orgda48218">
+<h3 id="orgda48218"><h1 style="font-size:70px; color:#4E03FC">Limitations Without Explicit Substitutions</h1></h3>
+
+<div id="orgfa56ee6" class="figure">
+<p><img src="noexplicit.png" alt="noexplicit.png" width="100%" />
+</p>
+</div>
+
+</section>
+<section id="slide-org0485481">
+<h3 id="org0485481"><h1 style="font-size:70px; color:#4E03FC">Limitations Without Explicit Substitutions</h1></h3>
+
+<div id="orgccbc37f" class="figure">
+<p><img src="explicit.png" alt="explicit.png" width="100%" />
+</p>
+</div>
+
+
+</section>
+</section>
+<section>
+<section id="slide-orgcd16b59">
+<h2 id="orgcd16b59"><h1 style="font-size:70px; color:#4E03FC">Questions</h1></h2>
+</section>
+</section>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@3.9.0/lib/js/head.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@3.9.0/js/reveal.js"></script>
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: false,
+center: true,
+slideNumber: 'c',
+rollingLinks: false,
+keyboard: true,
+mouseWheel: false,
+fragmentInURL: false,
+hashOneBasedIndex: false,
+pdfSeparateFragments: true,
+overview: true,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'convex', // see README of reveal.js for options
+transitionSpeed: 'default',
+
+// Optional libraries used to extend reveal.js
+dependencies: [
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js@3.9.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js@3.9.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js@3.9.0/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js@3.9.0/plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js@3.9.0/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } }]
+
+});
+</script>
+</body>
+</html>

@@ -1,20 +1,38 @@
-#+Title: Alternative Methods for Retaining Explicit and Finding Implicit Sharing in Embedded DSLs
-#+DATE: 2022-01-13
-#+EMAIL: curtis.dalves@gmail.com
-#+AUTHOR: Curtis D'Alves
+* Header :ignore:
+# -*- mode: org; -*-
 
-* Overview
-+ Welcome to my talk!
+
+
+#+REVEAL_ROOT: https://cdn.jsdelivr.net/npm/reveal.js@3.9.0
+#+REVEAL_VERSION: 3.9.0
+#+REVEAL_THEME: sky
+
+#+OPTIONS: reveal_title_slide:auto num:nil toc:nil timestamp:nil
+
+#+MACRO: caption @@html:<h1 style="font-size:70px; color:#4E03FC">$1</h1>@@
+#+MACRO: captiontiny @@html:<h1 style="font-size:30px">$1</h1>@@
+#+MACRO: alert @@html:<font color="#4E03FC">$1</font>@@
+
+#+REVEAL_EXTRA_CSS: ./reveal_extra.css
+# add a reveal_extra.css to the current directory (use snippet reveal_css)
+# To load Org-reveal, type “M-x load-library”, then type “ox-reveal”.
+
+
+#+Title: {{{caption(Alternative Methods for Retaining Explicit and Finding Implicit Sharing in Embedded DSLs)}}}
+#+DATE: {{{captiontiny(2022-01-15)}}}
+#+AUTHOR: {{{captiontiny(Curtis D'Alves)}}}
+
+* {{{caption(Overview)}}}
  
-+ I'm going to present a new method for detecting sharing in embedded DSLs
-  * I'll start by giving a small example of an embedded DSL
-  * Identify the "sharing problem" that occurs
-  * Present current solutions with their advantages/shortcomings
-  * Explain my new method with it's advantages/shortcomings
++ I'm going to present a {{{alert(new method for detecting sharing)}}} in embedded DSLs
+  * I'll start by giving a {{{alert(small example)}}} of an embedded DSL
+  * Identify the {{{alert(sharing problem)}}} that occurs
+  * Present {{{alert(current solutions)}}} with their advantages/shortcomings
+  * Explain my {{{alert( new method )}}} with it's advantages/shortcomings
 
-* Embedded Domain Specific Languages
+* {{{caption(Embedded Domain Specific Languages)}}}
 
-+ Consider the naive eDSL implemented as a Haskell data type:
++ Consider the naive eDSL implemented as a {{{alert(algebriac data type)}}}:
 
 #+BEGIN_SRC haskell :results value
 data Exp
@@ -32,9 +50,9 @@ expr =
   in Add exp0 exp0
 #+END_SRC
 
-** Implementing eDSL Functionality
+** {{{caption(Implementing eDSL Functionality)}}}
 
-+ DSL designers will commonly implement functionality like evaluation
+- DSL designers will commonly implement functionality like evaluation
 
 #+BEGIN_SRC haskell :results value
 eval (Add e0 e1) varMap = eval e0 + eval e1
@@ -42,7 +60,7 @@ eval (Variable lbl) varMap = lookup lbl varMap
 eval (Constant c) varMap = c
 #+END_SRC
 
-+ Or pretty printing
+- Or pretty printing
 
 #+BEGIN_SRC haskell :results value
 pretty (Add e0 e1) = "("++pretty e0++") + ("++pretty e1++")"
@@ -50,12 +68,12 @@ pretty (Variable lbl) = lbl
 pretty (Constant c) = show c
 #+END_SRC
 
-** Finally Tagless Style
+** {{{caption(Finally Tagless Style)}}}
 
-+ Data type based eDSL's have an extensibility issue, you can't extend the DSL
++ Data type based eDSL's have an {{{alert(extensibility issue)}}}, you can't extend the DSL
     operations without directly modifying the core library
 
-+ We can redefine our eDSL in Finally Tagless Style (of Carette et al.) to solve this issue
++ We can redefine our eDSL in {{{alert(Finally Tagless Style)}}} (of Carette et al.) to solve this issue
 
 #+BEGIN_SRC haskell :results value
 class Exp repr where
@@ -64,8 +82,8 @@ class Exp repr where
   add :: repr Int -> repr Int -> repr Int
 #+END_SRC
 
-** Generating an AST from Finally Tagless
-+ We can easily generate an AST from our new interface
+** {{{caption( Generating an AST from Finally Tagless )}}}
++ We can easily {{{alert( generate an AST )}}} from our new interface
    
 #+BEGIN_SRC haskell :results value
 data AST a
@@ -79,10 +97,10 @@ instance Exp AST where
   constant = Constant
 #+END_SRC
 
-+ Or we can generate more generic graph strutures (bipartite graphs,
++ Or we can generate more {{{alert( generic graph strutures )}}} (bipartite graphs,
   hypergraphs, etc)
 
-* The Observable Sharing Problem
+* {{{caption(The Observable Sharing Problem)}}}
 
 + Consider the following DSL code
 
@@ -93,7 +111,7 @@ expr =
   in add expr0 expr0
 #+END_SRC
 
-+ It generates the ~Abstract Syntax Tree~
++ It generates the {{{alert(Abstract Syntax Tree)}}}
 #+begin_src mermaid :file AST0.png
 graph TB;
     Add0[Add]-->V0[x]
@@ -106,7 +124,10 @@ graph TB;
 #+RESULTS:
 [[file:AST0.png]]
 
-+ Or does it generate the ~Directed Acyclic Graph~?
+
+** {{{caption(The Observable Sharing Problem)}}}
+
++ Or does it generate the {{{alert(Directed Acyclic Graph)}}}?
 #+begin_src mermaid :file AST1.png
 graph TB;
     Add0[Add]-->V0[x]
@@ -115,9 +136,10 @@ graph TB;
     Add2-->Add0
 #+end_src
 #+RESULTS:
+   #+ATTR_HTML: :width 15%
 [[file:AST1.png]]
 
-** When Haskell's Sharing Is Insufficient
+** {{{caption(When Haskell's Sharing Is Insufficient)}}}
 
 + What if we want to ~perform code generation~, for example
   
@@ -127,8 +149,7 @@ CodeGen (["exp0 = x + 0"
          ,"exp1 = exp0 + exp0"])
 #+END_SRC
 
-+ Creating such a code generator over an AST will involve having to ~identify
-  common subexpressions~
++ Creating such a code generator over an AST will involve having to {{{alert(identify common subexpressions)}}}
   
 #+BEGIN_SRC haskell :results value
 codegen codeList (Op2 lbl e0 e1) = ...
@@ -136,9 +157,9 @@ codegen codeList (Op2 lbl e0 e1) = ...
 
 + We need to create references for e0,e1, how do we identify if they are the same?
   
-** Generating a Directed Acyclic Graph
+** {{{caption(Generating a Directed Acyclic Graph)}}}
 
-+ To observe sharing, we need a ~Directed Acyclic Graph~ (i.e., DAG)
++ To observe sharing, we need a {{{alert(Directed Acyclic Graph)}}} (i.e., DAG)
 
 + But how would we generate a DAG that explicitly identifies sharing
 #+BEGIN_SRC haskell :results value
@@ -155,10 +176,10 @@ instance Exp DAG where
   ...
 #+END_SRC
 
-** Generating Unique Identifiers
+** {{{caption(Generating Unique Identifiers)}}}
 
-+ We can use the ~State Monad~ to keep track of a counter and create a
-  ~unique NodeId~
++ We can use the {{{alert(State Monad)}}} to keep track of a counter and create a
+  {{{alert(unique NodeId)}}}
 #+BEGIN_SRC haskell :results value
 
 newtype Graph a = Graph { unGraph :: State (DAG,Int) NodeId }
@@ -174,9 +195,9 @@ insertNode n = do (DAG m,cnt) <- get
 
 + However, this still doesn't identify common subexpressions
 
-* Previous Work: Implicit Sharing via Hash-Consing
+* {{{caption(Previous Work: Hash-Consing)}}}
 
-+ ~Oleg Kiselyov~ presented a solution to this via the method of hash-consing
++ {{{alert(Oleg Kiselyov)}}} presented a solution to this via the method of hash-consing
 
 #+BEGIN_SRC haskell :results value
 instance Exp Graph where
@@ -191,15 +212,11 @@ hashcons e = do
     Nothing -> let (k,m') = insert e m
                in put (DAG m',cnt+1) >> return k
     Just k -> return k
-  
 #+END_SRC
-+ Hash-consing essentially ~performs common-subexpression-elimination~ by checking
-  if a node has already been inserted beforehand
 
-** Limitations of Hash-Consing
+** {{{caption(Limitations of Hash-Consing)}}}
 
-+ The problem with just Hash-Consing, is every time a value is shared it's ~AST
-  is re-traversed~, performing a lookup check at each node
++ The problem with just Hash-Consing, is every time a value is shared it's {{{alert(AST is re-traversed)}}}, performing a lookup check at each node
   
 + Consider the following example
  
@@ -213,14 +230,14 @@ addChains =
   in xn
 #+END_SRC 
 
-** Limitations of HashConsing
+** {{{caption(Limitations of HashConsing)}}}
 
 + This leads to an exponential scaling of hash-cons operations
   [[file:hashconscmp.png]]
 
-** Explicit Sharing
+** {{{caption(Explicit Sharing)}}}
 
-+ Kiselyov noted this issue, and proposed a solution, ~explicit sharing~ via a
++ Kiselyov noted this issue, and proposed a solution, {{{alert(explicit sharing)}}} via a
   custom let construct
   
 #+BEGIN_SRC haskell :results value
@@ -232,7 +249,7 @@ instance ExpLet Graph where
                      unGraph $ f (Graph (return x)))
 #+END_SRC
 
-+ We can now ~redefine the example~ from before with explicit sharing
++ We can now {{{alert(redefine the example)}}} from before with explicit sharing
  
 #+BEGIN_SRC haskell :results value
 addChains x =
@@ -243,9 +260,9 @@ addChains x =
   )))
 #+END_SRC
 
-** Limitations of Explicit Sharing
+** {{{caption(Limitations of Explicit Sharing)}}}
  
-+ This method does not work for DSL functions that ~return multiple outputs~
++ This method does not work for DSL functions that {{{alert(return multiple outputs)}}}
  
 #+BEGIN_SRC haskell :results value
 class Exp repr where
@@ -255,7 +272,7 @@ class Exp repr where
   novel :: (repr Int,repr Int) -> (repr Int,repr Int)
 #+END_SRC
 
-+ The problem is that DAG generation requires ~splitting the state monad in two~
++ The problem is that DAG generation requires {{{alert(splitting the state monad in two)}}}
 
 #+BEGIN_SRC haskell :results value
 instance Exp Graph where
@@ -270,10 +287,10 @@ instance Exp Graph where
      in (g1,g2)
 #+END_SRC
 
-* Our Method, Implicit Sharing Via Trie Memoizing
+* {{{caption(My Method, Via Trie Memoizing)}}}
 
-+ Our proposed solution is to build a ~serialized AST using byte strings~ for each
-  node ~alongside the State Monad~
++ My proposed solution is to build a {{{alert(serialized AST using byte strings)}}} for each
+  node {{{alert(alongside the State Monad)}}}
   
 #+BEGIN_SRC haskell :results value
 data DAG = DAG { unTrie :: Trie (Node,NodeID), maxID :: NodeID }
@@ -282,7 +299,8 @@ data Graph a = Graph { unGraph :: State DAG NodeID
                      , stringAST :: ByteString }
 #+END_SRC
 
-+ The method also ~performs hash-consing, but with a trie~
+** {{{caption(Trie Consing)}}}
++ The method also {{{alert(performs hash-consing, but with a trie)}}}
 
 #+BEGIN_SRC haskell :results value
 triecons :: ByteString -> Node -> State DAG NodeID
@@ -296,8 +314,8 @@ triecons sAST node = do
     Just (_,nodeID) -> return nodeID
 #+END_SRC
 
-** Preventing redundant traversal
-+ When we implement DAG generation, we ~build a serialized AST at each node~
+** {{{caption(Preventing redundant traversal)}}}
++ When we implement DAG generation, we {{{alert(build a serialized AST at each node)}}}
  
 #+BEGIN_SRC haskell :results value
 instance Exp Graph where
@@ -309,8 +327,7 @@ instance Exp Graph where
     in Graph sT sAST
 #+END_SRC
 
-+ The key to ~preventing re-traversal of nodes~ is in how arguments are
-  sequenced
++ The key is {{{alert(preventing re-traversal of nodes)}}}
    
 #+BEGIN_SRC haskell :results value
 seqArgs :: [Graph a] -> State DAG [NodeID]
@@ -323,16 +340,16 @@ seqArgs inps = let
   in sequence $ map seqArg inps
 #+END_SRC
 
-** Limitations of Our Method
+** {{{caption(Limitations of Our Method)}}}
 
-+ The serialized AST can ~consume a lot of memory~
++ The serialized AST can {{{alert(consume a lot of memory)}}}
  
-+ The ~addChains example~ from before now has exponential scaling in memory
++ The {{{alert(addChains example)}}} from before now has exponential scaling in memory
   instead of computation
 
-** Explicit Sharing
+** {{{caption(Explicit Sharing)}}}
 
-+ Just like Kiselyov, we add a method for ~explicit sharing~ (this time of memory)
++ Just like Kiselyov, we add a method for {{{alert(explicit sharing)}}} (this time of memory)
 
 #+BEGIN_SRC haskell :results value
 class Substitute repr where
@@ -345,7 +362,8 @@ exampleSubT x y = let
   in add z z
 #+END_SRC
 
-+ This requires us to keep a ~map of substitutions~ along with our DAG
+** {{{caption(Mapping Substitutions)}}}
++ This requires us to keep a {{{alert(map of substitutions)}}} along with our DAG
  
 #+BEGIN_SRC haskell :results value
 data DAG = DAG { dagTrie :: Trie (Node,NodeID)
@@ -357,16 +375,16 @@ data Graph a = Graph { unGraph :: State DAG NodeID
                      , unSubT :: Maybe ByteString }
 #+END_SRC
 
-* Comparing our methods
+* {{{caption(Comparing our methods: addChains)}}}
 
     | HashCons time  | 0.0 secs | 0.0 secs | 0.01 secs | 0.03 secs |
     | HashCons alloc | 0.62 MB  | 0.74 MB  | 28.67 MB  | 155.99 MB |
     | TrieCons time  | 0.0 secs | 0.0 secs | 0.03 secs | 0.16 secs |
     | TrieCons alloc | 1.77 MB  | 2.33 MB  | 129.14 MB | 723.43 MB |
 
-** Real World Benchmarks
+** {{{caption(Real World Benchmarks)}}}
 
-+ We implemented both methods on our DSL ~COCONUT~, a high level assembly
++ We implemented both methods on our DSL {{{alert(COCONUT)}}}, a high level assembly
   language similar to LLVM
 
 #+BEGIN_SRC haskell :results value
@@ -386,9 +404,9 @@ class CoreISA repr where
   ...
 #+END_SRC
 
-** Coconut DSL
+** {{{caption(Coconut DSL)}}}
 
-+ We can use this language to encode basic blocks in ~Single Static Assignment~
++ We can use this language to encode basic blocks in {{{alert(Single Static Assignment)}}}
   form
    
 #+BEGIN_SRC haskell :results value
@@ -400,24 +418,28 @@ add2 (a, b) =
     in (a', b')
 #+END_SRC
 
-** HashCons vs TrieCons
+   
+** {{{caption(HashCons vs TrieCons)}}}
+   #+ATTR_HTML: :width 100%
+   [[file:cos_profile_hashcons.png]]
+   
+** {{{caption(HashCons vs TrieCons)}}}
 
    #+ATTR_HTML: :width 100%
    [[file:cos_profile_triecons.png]]
 
-   #+ATTR_HTML: :width 100%
-   [[file:cos_profile_hashcons.png]]
-
-** Limitations Without Explicit Substitutions
+** {{{caption(Limitations Without Explicit Substitutions)}}}
 
    #+ATTR_HTML: :width 100%
    [[file:noexplicit.png]]
+
+** {{{caption(Limitations Without Explicit Substitutions)}}}
 
    #+ATTR_HTML: :width 100%
    [[file:explicit.png]]
 
 
-* Questions
+* {{{caption(Questions)}}}
 
 #  LocalWords:  DSLs ASTs LocalWords eDSL Tagless eDSL's Carette al Haskell's
 #  LocalWords:  NodeId Kiselyov Consing consing AST Trie Memoizing trie LLVM
