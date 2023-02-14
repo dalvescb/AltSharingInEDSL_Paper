@@ -10,7 +10,6 @@
    (add-to-list 'LaTeX-verbatim-environments-local "lstlisting")
    (add-to-list 'LaTeX-verbatim-environments-local "minted")
    (add-to-list 'LaTeX-verbatim-macros-with-braces-local "href")
-   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "hyperref")
    (add-to-list 'LaTeX-verbatim-macros-with-braces-local "hyperimage")
    (add-to-list 'LaTeX-verbatim-macros-with-braces-local "hyperbaseurl")
    (add-to-list 'LaTeX-verbatim-macros-with-braces-local "nolinkurl")
@@ -32,7 +31,9 @@
     "limithashcons"
     "fig:hashcons"
     "limitexplicit"
-    "tab1")
+    "tab1"
+    "fig:hashvscons"
+    "fig:explicitvsno")
    (LaTeX-add-bibliographies
     "references"))
  :latex)
