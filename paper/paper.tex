@@ -90,7 +90,7 @@ class Exp repr where
 the function \mintinline{haskell}{novel} will exhibit an issue in sharing of
 it's two outputs when writing it's implementation that cannot be solved using
 the methods of \cite{kiselyov:sharing}. We will illustrate this implementation
-issue in section \ref{limitexplicit}. In our work, this translated into the
+issue in Section \ref{limitexplicit}. In our work, this translated into the
 inability to process large library functions.
 
 \smallskip
@@ -598,48 +598,49 @@ add2 (a, b) =
     in (a', b')
 \end{minted}
 
-We used this language to implement approximations of vector \texttt{cos} and \texttt{tan} (i.e., a
-loop body that computes over an input and output array). The loop body was
-unrolled by a factor of four making for a sufficiently large resulting DAG.
+We used this language to implement approximations of vector
+\mintinline{haskell}{cos} and \mintinline{haskell}{tan} (i.e., a loop body that
+computes over an input and output array). The loop body was unrolled by a factor
+of four making for a sufficiently large resulting DAG.
 
-We profiled cos using both Kiselyov's method (i.e., hash-consing) and are own
+We profiled \mintinline{haskell}{cos} using both Kiselyov's method (i.e., hash-consing) and are own
 (i.e., trie-consing with some explicit sharing). It wasn't possible to use
 Kiselyov's explicit sharing method where meaningful so our code was able to
 achieve greater performance, with only a small increase in memory consumption
-(see figure \ref{fig:hashvscons}).
+(see Fig.~\ref{fig:hashvscons}).
 
 \begin{figure}[!h]
   \centering
-  \includegraphics[width=0.45\textwidth]{figs/cos_profile_hashcons.png}
-  \hfill
-  \includegraphics[width=0.45\textwidth]{figs/cos_profile_triecons.png}
+  \includegraphics[width=0.6\textwidth]{figs/cos_profile_hashcons_cropped.png}
+  \includegraphics[width=0.6\textwidth]{figs/cos_profile_triecons_cropped.png}
   \caption{Comparison of cos using hash-cons vs trie-cons}
   \label{fig:hashvscons}
 \end{figure}
 
 
-For tan, we were unable to generate a resulting code graph using Kiselyov's
+For \mintinline{haskell}{tan}, we were unable to generate a resulting code graph using Kiselyov's
 method. Using explicit sharing via let constructs wasn't possible due to the
 multiple outputs issue and without it the amount of computation due to redundant
 hash-consing was simply too large to perform in a reasonable amount of time.
 
-We were able to generate tan using our method both without and with our explicit
+We were able to generate \mintinline{haskell}{tan} using our method both without and with our explicit
 sharing, however without explicit sharing we consumed an unreasonable amount of
-memory (see figure \ref{fig:explicitvsno}). It should be noted, the main source
-of redundant computation in tan is the reuse of computed values of cos and sin.
-By simply explicitly sharing just those values we achieved the significant
-speedup shown in figure \ref{fig:explicitvsno}.
+memory (see Fig.~\ref{fig:explicitvsno}). It should be noted, the main source of
+redundant computation in \mintinline{haskell}{tan} is the reuse of computed values of
+\mintinline{haskell}{cos} and \mintinline{haskell}{sin}. By simply explicitly
+sharing just those values we achieved the significant speedup shown in
+Fig.~\ref{fig:explicitvsno}.
 
 \begin{figure}[!h]
   \centering
-  \includegraphics[width=0.45\textwidth]{figs/noexplicit.png}
+  \includegraphics[width=0.6\textwidth]{figs/noexplicit_cropped.png}
   \hfill
-  \includegraphics[width=0.45\textwidth]{figs/explicit.png}
+  \includegraphics[width=0.6\textwidth]{figs/explicit_cropped.png}
   \caption{Comparison of tan profiling using no explicit sharing vs explicit}
   \label{fig:explicitvsno}
 \end{figure}
 
-\section{Conclusion}
+\section{Conclusion and Future Work}
 We have presented a method for constructing finally tagless style DSLs with
 sharing detection, that allows for DSLs specifying hypergraphs (e.g., functions
 with multiple outputs). It also avoids the use of unsafe referencing as
@@ -649,7 +650,9 @@ The method has it's drawbacks in terms of memory usage, but these can be
 mitigated by explicitly specifying sharing. This does present an extra burden on
 the DSL writer to implement explicit sharing when necessary and ensure labels
 are not reused. Future work may investigate the use of a preprocessor or plugin
-to automate explicit sharing.
+to automate explicit sharing. Unlike an explicit let construct, it would be
+fairly straightforward to automatically bind \mintinline{haskell}{subT}
+operations to any DSL function call.
 
 \subsubsection{Acknowledgements} We thank NSERC and IBM Canada Advanced Studies for supporting this work.
 %
