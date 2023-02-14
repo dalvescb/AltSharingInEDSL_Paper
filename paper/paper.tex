@@ -71,13 +71,13 @@ Christopher Kumar Anand
 %
 \section{Introduction}
 
-Kiselyov \cite{kiselyov:sharing}  presents a method for implementing
-eDSLs in finally tagless form that generate a directed acyclic graph (DAG) with
-sharing. 
+Kiselyov \cite{kiselyov:sharing} presents a method for implementing eDSLs in
+finally tagless form that generate a directed acyclic graph (DAG) with sharing.
 However, as we will explain in sections~\ref{limithashcons} and
-\ref{limitexplicit}, for DSL functions that return multiple
-outputs (e.g., tuples, lists, etc.), Kiselyov's method of detecting sharing may require computation exponential in the size of the program,
-and his method of explicitly declaring sharing is inapplicable.
+\ref{limitexplicit}, for DSL functions that return multiple outputs (e.g.,
+tuples, lists, etc.), Kiselyov's method of implicitly detecting sharing may
+require computation exponential in the size of the program, and his method of
+explicitly declaring sharing is inapplicable.
 
 In the toy example
 \begin{minted}{haskell}
@@ -87,9 +87,11 @@ class Exp repr where
   add :: repr Int -> repr Int -> repr Int
   novel :: (repr Int,repr Int) -> (repr Int,repr Int)
 \end{minted}
-the function \mintinline{haskell}{novel} exhibits this problem.
- In our work,
-this translated into the inability to process large library functions.
+the function \mintinline{haskell}{novel} will exhibit an issue in sharing of
+it's two outputs when writing it's implementation that cannot be solved using
+the methods of \cite{kiselyov:sharing}. We will illustrate this implementation
+issue in section \ref{limitexplicit}. In our work, this translated into the
+inability to process large library functions.
 
 \smallskip
 In this paper, we review Kiselyov's methods, identifying the core issue, and
@@ -135,7 +137,7 @@ Monads are useful, but don't match the expectations of domain experts \cite{odon
 
  It would be nice
 to make use of monadic state when we need it (i.e., for converting to a DAG)
-while hiding it behind a nice pure interface. The finally tagless approach 
+while hiding it behind a nice pure interface. The finally tagless approach
 \cite{carette:finallytagless} is popular for accomplishing this. In this
 approach, DSL expressions are built using type-class methods that wrap the DSL in
 a parameterized representation. For example, the previous data-type-based DSL
@@ -149,9 +151,9 @@ class Exp repr where
 \end{minted}
 
 We can then create different instances to implement different functionality.
-For example, we can implement a pretty printer for our AST as
+For example, we can implement a pretty printer
 \begin{minted}{haskell}
-newtype Pretty a = Pretty { unPretty :: String }
+newtype Pretty a = Pretty { runPretty :: String }
 
 instance Exp Pretty where
   add x y = Pretty $ "("++unPretty x++") + ("++unPretty y++")"
@@ -159,15 +161,36 @@ instance Exp Pretty where
   constant x = Pretty $ show x
 \end{minted}
 
+Or generate an AST
+\begin{minted}{haskell}
+newtype AST a = AST { genAST :: Exp }
+
+instance Exp AST where
+  add x y =  AST $ Add (genAST x) (genAST y)
+  variable x = AST $ Variable x
+  constant x = AST $ Constant x
+\end{minted}
+
 Finally tagless style provides extensible, user friendly DSLs.
 
 \subsection{Implicit Sharing via Hash-Consing}
 
-Kiselyov's method
- for detecting implicit sharing in finally tagless
-style uses hash-consing \cite{kiselyov:sharing}.
-Hash-consing is based on a bijection of nodes and a set of identifiers,
-e.g., with interface 
+The goal of detecting sharing is to generate a graph structure (like the AST in
+the previous section) that share's common subexpressions. So we're essentially
+going to generate a Directed Acyclic Graph (DAG) instead of an AST. For example
+
+\begin{minted}{haskell}
+type NodeID = Int
+data Node = NAdd NodeID NodeID
+          | NVariable String
+          | NConstant Int
+
+newtype DAG = DAG (BiMap Node) deriving Show
+\end{minted}
+
+Kiselyov's method for detecting implicit sharing in finally tagless style uses
+hash-consing \cite{kiselyov:sharing}. Hash-consing is based on a bijection of
+nodes and a set of identifiers, e.g.,
 \begin{minted}{haskell}
 data BiMap a -- abstract
 lookup_key :: Ord a => a -> BiMap a -> Maybe Int
@@ -175,22 +198,15 @@ lookup_val :: Int -> BiMap a -> a
 insert :: Ord a => a -> BiMap a -> (Int,BiMap a)
 empty :: BiMap a
 \end{minted}
-An efficient implementation using hashing and linear probing is given by Thai
-in his Master's thesis \cite{thai2021type}.
 
-Nodes need to be uniquely identifiable, and shouldn't be a recursive data type,
-such as
-\begin{minted}{haskell}
-type NodeID = Int
-data Node = NAdd NodeID NodeID
-          | NVariable String
-          | NConstant Int
-\end{minted}
+The method can be performed using any data structure that provides the above
+interface. An efficient implementation would use hashing and linear probing, as
+is done by Thai in his Master's thesis \cite{thai2021type}.
+
 The representation for the finally tagless
 instance is then a wrapper around a state monad that holds the DAG being constructed in its state and
 returns the current (top) \mintinline{haskell}{NodeID}:
 \begin{minted}{haskell}
-newtype DAG = DAG (BiMap Node) deriving Show
 
 newtype Graph a = Graph { unGraph :: State DAG NodeID }
 
@@ -222,7 +238,7 @@ of type-safe hash-consing in embedded DSLs, see \cite{filliatre:typesafeconsing}
 
 When we wrap our state monad in finally tagless style, we lose some expected sharing. In the following code, the use of the let causes the computation $x + y$ to only occur once
 \begin{minted}{haskell}
-haskellSharing x y=
+haskellSharing x y =
  let
    z = x + y
  in z + z

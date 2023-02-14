@@ -10,6 +10,9 @@
     "ershov1958:consing"
     "filliatre:typesafeconsing"
     "elliott:compilingembedded"
-    "thai2021type"))
+    "thai2021type"
+    "odonnell:embedding"
+    "clements2001little"
+    "10.1145/2775053.2658771"))
  '(or :bibtex :latex))
 
