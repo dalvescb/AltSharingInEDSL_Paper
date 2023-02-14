@@ -59,7 +59,7 @@ Christopher Kumar Anand
   observable sharing. However these methods are not applicable to all types of
   DSLs (including those generating hypergraphs). We will present alternative
   methods which handle these cases. The main difference comes from the use of a
-  trie to perform hashconsing. Our method for implicit sharing essentially
+  trie to perform hash-consing. Our method for implicit sharing essentially
   trades worst-case exponential growth in computation for increased memory
   footprint. To mitigate this issue, our method for explicit sharing reduces the
   memory footprint.
@@ -290,8 +290,8 @@ addChains x0 =
   \includegraphics[width=0.6\textwidth]{figs/hashconscmp.png}
   \caption{Number of calls to \mintinline{haskell}{hashcons} plotted against the
     number of \mintinline{haskell}{add} operations performed.
-    Hashcons is performed without explicit sharing and is clearly exponential,
-    Triecons (without explicit sharing) and HashCons Explicit (with explicit
+    Hash-consing is performed without explicit sharing and is clearly exponential,
+    Triecons (without explicit sharing) and Hashcons Explicit (with explicit
     sharing) overlap and are both linear
   } \label{fig:hashcons}
 \end{figure}
@@ -353,7 +353,7 @@ instance Exp Graph where
 \end{minted}
 Each output it returns will now have to be individually evaluated, so a chain of
 DSL functions that output 2 or more values will suffer from the same exponential
-explosion of hashcons operations, and trying to adapt the let construct above,
+explosion of hash-consing operations, and trying to adapt the let construct above,
 just creates another function with the same problem (multiple outputs).
 
 One solution to this issue is to integrate container types such as tuples and
@@ -443,7 +443,7 @@ seqArgs inps =
 \end{minted}
 
 This will prevent
-redundant hashconsing without the need for explicit sharing,
+redundant hash-consing without the need for explicit sharing,
 but at the expense of storing redundant byte strings. 
 
 \subsection{Memory Limitations}
@@ -548,10 +548,10 @@ requires many substitution lookups.
     \hline
     {\bf Size } &  150 & 200 & 10000 & 50000 \\
     \hline
-    {\bf HashCons time } &  0.0 secs & 0.0 secs & 0.01 secs & 0.03 secs \\
-    {\bf HashCons alloc } &  619,296 bytes & 739,304 bytes & 28,662,592 bytes & 155,993,544 bytes \\
-    {\bf TrieCons time } &   0.0 secs & 0.0 secs & 0.03 secs & 0.16 secs \\
-    {\bf TrieCons alloc } &  1,773,416 bytes & 2,333,680 bytes & 129,146,808 bytes & 723,437,504 bytes \\
+    {\bf Hash-Cons time } &  0.0 secs & 0.0 secs & 0.01 secs & 0.03 secs \\
+    {\bf Hash-Cons alloc } &  619,296 bytes & 739,304 bytes & 28,662,592 bytes & 155,993,544 bytes \\
+    {\bf Trie-Cons time } &   0.0 secs & 0.0 secs & 0.03 secs & 0.16 secs \\
+    {\bf Trie-Cons alloc } &  1,773,416 bytes & 2,333,680 bytes & 129,146,808 bytes & 723,437,504 bytes \\
     \hline
   \end{tabular}
 
@@ -598,7 +598,7 @@ add2 (a, b) =
     in (a', b')
 \end{minted}
 
-We used this language to implement approximations of vector cos and tan (i.e., a
+We used this language to implement approximations of vector \texttt{cos} and \texttt{tan} (i.e., a
 loop body that computes over an input and output array). The loop body was
 unrolled by a factor of four making for a sufficiently large resulting DAG.
 
@@ -613,7 +613,7 @@ achieve greater performance, with only a small increase in memory consumption
   \includegraphics[width=0.45\textwidth]{figs/cos_profile_hashcons.png}
   \hfill
   \includegraphics[width=0.45\textwidth]{figs/cos_profile_triecons.png}
-  \caption{Comparison of cos using hashcons vs triecons}
+  \caption{Comparison of cos using hash-cons vs trie-cons}
   \label{fig:hashvscons}
 \end{figure}
 
@@ -635,7 +635,7 @@ speedup shown in figure \ref{fig:explicitvsno}.
   \includegraphics[width=0.45\textwidth]{figs/noexplicit.png}
   \hfill
   \includegraphics[width=0.45\textwidth]{figs/explicit.png}
-  \caption{Comparison of tan using no explicit sharing vs explicit}
+  \caption{Comparison of tan profiling using no explicit sharing vs explicit}
   \label{fig:explicitvsno}
 \end{figure}
 
