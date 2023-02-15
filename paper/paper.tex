@@ -88,7 +88,7 @@ class Exp repr where
   novel :: (repr Int,repr Int) -> (repr Int,repr Int)
 \end{minted}
 the function \mintinline{haskell}{novel} will exhibit an issue in sharing of
-it's two outputs when writing it's implementation that cannot be solved using
+its two outputs when writing its implementation that cannot be solved using
 the methods of \cite{kiselyov:sharing}. We will illustrate this implementation
 issue in Section \ref{limitexplicit}. In our work, this translated into the
 inability to process large library functions.
@@ -209,7 +209,7 @@ is done by Thai in his Master's thesis \cite{thai2021type}.
 In order to generate such a data structure, we will need to keep track of the
 current maximum identifier to keep them unique. The representation for the
 finally tagless instance is then a wrapper around a state monad that holds the
-DAG being constructed in it's state and returns the current (top)
+DAG being constructed in its state and returns the current (top)
 \mintinline{haskell}{NodeID}:
 
 \begin{minted}{haskell}
@@ -237,7 +237,7 @@ hashcons e = do
     Just k -> return k
 \end{minted}
 
-The technique is essentially that of hash-consing, popularized by it's use in
+The technique is essentially that of hash-consing, popularized by its use in
 LISP compilers, but discovered by Ershov in 1958 \cite{ershov1958:consing}.
 Other works have explored the use of type-safe hash-consing in embedded DSLs,
 see \cite{filliatre:typesafeconsing}.
@@ -368,7 +368,7 @@ lose access to built-in Haskell list functionality.
 The heart of our problem is that whenever we need to sequence the state of the inputs
 for one of our DSL functions we want to first check if it's already been
 evaluated. But how do we do that without first evaluating it to gain access to
-it's unique identifier? We need some way to uniquely identify it outside the monad.
+its unique identifier? We need some way to uniquely identify it outside the monad.
 
 Our proposed solution is to build a serialized AST using byte strings for each node along with our
 DAG.
@@ -429,7 +429,7 @@ instance Exp Graph where
 \end{minted}
 The magic is in \mintinline{haskell}{seqArgs}.
 We only evaluate the inner state \mintinline{haskell}{sT} of each argument if we
-fail to find it's corresponding serialized AST in the Trie.
+fail to find its corresponding serialized AST in the Trie.
 \begin{minted}{haskell}
 seqArgs :: [Graph a] -> State DAG [NodeID]
 seqArgs inps =
@@ -646,7 +646,7 @@ sharing detection, that allows for DSLs specifying hypergraphs (e.g., functions
 with multiple outputs). It also avoids the use of unsafe referencing as
 performed when doing observable sharing, c.f. \cite{gill:observablesharing}.
 
-The method has it's drawbacks in terms of memory usage, but these can be
+The method has its drawbacks in terms of memory usage, but these can be
 mitigated by explicitly specifying sharing. This does present an extra burden on
 the DSL writer to implement explicit sharing when necessary and ensure labels
 are not reused. Future work may investigate the use of a preprocessor or plugin
