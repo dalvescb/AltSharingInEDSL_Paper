@@ -95,10 +95,10 @@ class Exp repr where
 \end{minted}
 the function \mintinline{haskell}{novel} will exhibit this issue. Since it
 returns multiple outputs via a native tuple or list, it will cause duplication
-of computation that cannot be captured by Kiselyov's explicit sharing
-method. We will illustrate this implementation issue in Section
-\ref{limitexplicit}. In our work, this translated into the inability to process
-large library functions.
+of computation that cannot be captured by Kiselyov's explicit sharing method. We
+will illustrate this implementation issue in Section \ref{limitexplicit}.
+Encountering this issue in our own work with eDSLs for code generation caused a
+computational explosion on large DAGs.
 
 \smallskip
 In this paper, we review Kiselyov's methods, identifying the core issue, and
