@@ -94,8 +94,8 @@ class Exp repr where
   novel :: (repr Int,repr Int) -> (repr Int,repr Int)
 \end{minted}
 the function \mintinline{haskell}{novel} will exhibit this issue. Since it
-returns multiple outputs via a native tuple or list, it will diverge state used
-to generate the DAG that cannot be captured by Kiselyov's explicit sharing
+returns multiple outputs via a native tuple or list, it will cause duplication
+of computation that cannot be captured by Kiselyov's explicit sharing
 method. We will illustrate this implementation issue in Section
 \ref{limitexplicit}. In our work, this translated into the inability to process
 large library functions.
