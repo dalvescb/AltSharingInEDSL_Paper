@@ -71,8 +71,14 @@ Christopher Kumar Anand
 %
 \section{Introduction}
 
-Kiselyov \cite{kiselyov:sharing} presents a method for implementing eDSLs in
-finally tagless form that generate a directed acyclic graph (DAG) with sharing.
+Embedded DSL's have proven useful for many applications, and there are multiple
+ways of doing the embedding. Domain experts are more comfortable with embeddings
+presented as a collection of pure functions. On the other hand, optimizing code
+generators and other downstream uses would be much easier to implement in the
+context of a monad. In particular code graph generation outside of a monad does
+not benefit from observable sharing in Haskell. Kiselyov \cite{kiselyov:sharing}
+solves this problem by presenting a method for implementing eDSLs in finally
+tagless form that generates a directed acyclic graph (DAG) with sharing.
 However, as we will explain in sections~\ref{limithashcons} and
 \ref{limitexplicit}, for DSL functions that return multiple outputs (e.g.,
 tuples, lists, etc.), Kiselyov's method of implicitly detecting sharing may
@@ -87,11 +93,12 @@ class Exp repr where
   add :: repr Int -> repr Int -> repr Int
   novel :: (repr Int,repr Int) -> (repr Int,repr Int)
 \end{minted}
-the function \mintinline{haskell}{novel} will exhibit an issue in sharing of
-its two outputs when writing its implementation that cannot be solved using
-the methods of \cite{kiselyov:sharing}. We will illustrate this implementation
-issue in Section \ref{limitexplicit}. In our work, this translated into the
-inability to process large library functions.
+the function \mintinline{haskell}{novel} will exhibit this issue. Since it
+returns multiple outputs via a native tuple or list, it will diverge state used
+to generate the DAG that cannot be captured by Kiselyov's explicit sharing
+method. We will illustrate this implementation issue in Section
+\ref{limitexplicit}. In our work, this translated into the inability to process
+large library functions.
 
 \smallskip
 In this paper, we review Kiselyov's methods, identifying the core issue, and
