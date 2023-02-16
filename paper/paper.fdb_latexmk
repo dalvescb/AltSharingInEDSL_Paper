@@ -1,12 +1,12 @@
 # Fdb version 3
-["bibtex paper"] 1676480092 "paper.aux" "paper.bbl" "paper" 1676480869
+["bibtex paper"] 1676589194 "paper.aux" "paper.bbl" "paper" 1676589195
   "./splncs04.bst" 1670537954 33694 182740d5d784dd29ee55be34dddd4ccc ""
-  "paper.aux" 1676480869 10876 a35d5e087a7c4471e619a10b470f8525 "pdflatex"
-  "references.bib" 1676391526 3787 831d97deec24c164daa56c269e204c18 ""
+  "paper.aux" 1676589194 11148 2d74bd486b6396be1e99bc41dcd0aed8 "pdflatex"
+  "references.bib" 1676581350 2964 e6ceb7513ccb08591da92b1a458cfda8 ""
   (generated)
   "paper.bbl"
   "paper.blg"
-["pdflatex"] 1676480868 "paper.tex" "paper.pdf" "paper" 1676480869
+["pdflatex"] 1676589194 "paper.tex" "paper.pdf" "paper" 1676589195
   "/dev/null" 0 -1 0 ""
   "/nix/store/n17ln07jskdwhpslh0qzkxlv18mxgpfh-texlive-combined-full-2021-final/share/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1 4410454 f5723bca57b611acfce76be86ca66b86 ""
   "/nix/store/n17ln07jskdwhpslh0qzkxlv18mxgpfh-texlive-combined-full-2021-final/share/texmf-var/web2c/pdftex/pdflatex.fmt" 1 2828758 198a41dbd6475223c964925e38700488 ""
@@ -126,6 +126,7 @@
   "_minted-paper/0FD72D1490D144B425C6388C1580CB8BB3BC89C598CBC34B582D36BB10662E3F.pygtex" 1676357929 2630 e88134ccbf2956ad5f05b84cc7ca6d9d ""
   "_minted-paper/15D003A492C28D8C7F294E7F672B5736B3BC89C598CBC34B582D36BB10662E3F.pygtex" 1671159710 69 b2c8b90090f7edb7dda1529b8e7537ef ""
   "_minted-paper/1629209D471F583689C226BF3468133AB3BC89C598CBC34B582D36BB10662E3F.pygtex" 1676356670 77 6f204c39b70697561cd745e1ee171a05 ""
+  "_minted-paper/2157E5504CD6EC33CAC2714114283384B3BC89C598CBC34B582D36BB10662E3F.pygtex" 1676589193 73 32d496f6e0d9f5be7e760d72a3337e4f ""
   "_minted-paper/236FB109D5B4D1B48473E9B7075CB59AB3BC89C598CBC34B582D36BB10662E3F.pygtex" 1671177847 70 e3f07d53fe0de7efd74771879f699c84 ""
   "_minted-paper/2A3C01A8CECD9F8179EAB251BEDC7405B3BC89C598CBC34B582D36BB10662E3F.pygtex" 1671139786 71 a52ae4ae7710ab2bdab96e82108bb9e2 ""
   "_minted-paper/2AF6545882EC70083EC794EC1AAB76D6B3BC89C598CBC34B582D36BB10662E3F.pygtex" 1676477218 69 cb5d90ab640f5937b2cef4a5815ee6b9 ""
@@ -178,10 +179,10 @@
   "figs/hashconscmp.png" 1676357812 4471 840184e71a1012ee27bad9bb6c78c2a9 ""
   "figs/noexplicit_cropped.png" 1676477134 123931 dc40bda2bae352796de3e3cc5c2b8486 ""
   "llncs.cls" 1670537954 43530 d52f921432ec1a201702604aae613d16 ""
-  "paper.aux" 1676480869 10876 a35d5e087a7c4471e619a10b470f8525 "pdflatex"
-  "paper.bbl" 1676480092 1287 60d084031651c710cba9435ad2861bf1 "bibtex paper"
-  "paper.out" 1676480869 516 fadced982281b5bbd40fe8a3fc8b212f "pdflatex"
-  "paper.tex" 1676480724 28311 b07d5b5d5e178fc528862c1ef9105244 ""
+  "paper.aux" 1676589194 11148 2d74bd486b6396be1e99bc41dcd0aed8 "pdflatex"
+  "paper.bbl" 1676589194 2146 9251a41444cece87ba74fa158e46ee92 "bibtex paper"
+  "paper.out" 1676589194 516 fadced982281b5bbd40fe8a3fc8b212f "pdflatex"
+  "paper.tex" 1676589191 28900 6605f7296e2c07c904b89e1a313f812f ""
   (generated)
   "paper.aux"
   "paper.log"

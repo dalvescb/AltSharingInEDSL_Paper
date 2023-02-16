@@ -48,7 +48,7 @@
 }
 @mastersthesis{thai2021type,
   title={Type-Safe Modeling for Optimization},
-  university={McMaster},
+  school={McMaster},
   author={Thai, Nhan},
   year={2021}
 }
@@ -61,6 +61,22 @@
   year={2004},
   publisher={Springer}
 }
+@inproceedings{jovanovic2014yin,
+  title={Yin-Yang: Concealing the deep embedding of DSLs},
+  author={Jovanovic, Vojin and Shaikhha, Amir and Stucki, Sandro and Nikolaev, Vladimir and Koch, Christoph and Odersky, Martin},
+  booktitle={Proceedings of the 2014 International Conference on Generative Programming: Concepts and Experiences},
+  pages={73--82},
+  year={2014}
+}
+
+@inproceedings{svenningsson2013combining,
+  title={Combining deep and shallow embedding for EDSL},
+  author={Svenningsson, Josef and Axelsson, Emil},
+  booktitle={Trends in Functional Programming: 13th International Symposium, TFP 2012, St. Andrews, UK, June 12-14, 2012, Revised Selected Papers 13},
+  pages={21--36},
+  year={2013},
+  organization={Springer}
+}
 
 // TODO
 
@@ -72,22 +88,3 @@
   year={2001}
 }
 
-@article{10.1145/2775053.2658771,
-author = {Jovanovic, Vojin and Shaikhha, Amir and Stucki, Sandro and Nikolaev, Vladimir and Koch, Christoph and Odersky, Martin},
-title = {Yin-Yang: Concealing the Deep Embedding of DSLs},
-year = {2014},
-issue_date = {March 2015},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
-volume = {50},
-number = {3},
-issn = {0362-1340},
-url = {https://doi.org/10.1145/2775053.2658771},
-doi = {10.1145/2775053.2658771},
-abstract = {Deeply embedded domain-specific languages (EDSLs) intrinsically compromise programmer experience for improved program performance. Shallow EDSLs complement them by trading program performance for good programmer experience. We present Yin-Yang, a framework for DSL embedding that uses Scala macros to reliably translate shallow EDSL programs to the corresponding deep EDSL programs. The translation allows program prototyping and development in the user friendly shallow embedding, while the corresponding deep embedding is used where performance is important. The reliability of the translation completely conceals the deep em- bedding from the user. For the DSL author, Yin-Yang automatically generates the deep DSL embeddings from their shallow counterparts by reusing the core translation. This obviates the need for code duplication and leads to reliability by construction.},
-journal = {SIGPLAN Not.},
-month = {sep},
-pages = {73–82},
-numpages = {10},
-keywords = {Macros, Shallow Embedding, Deep Embedding, Reflection, Embedded Domain-Specific Languages}
-}

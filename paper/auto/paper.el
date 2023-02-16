@@ -26,7 +26,8 @@
     "graphicx"
     "listings"
     "minted"
-    "hyperref")
+    "hyperref"
+    "float")
    (LaTeX-add-labels
     "limithashcons"
     "fig:hashcons"

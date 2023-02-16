@@ -12,7 +12,8 @@
     "elliott:compilingembedded"
     "thai2021type"
     "odonnell:embedding"
-    "clements2001little"
-    "10.1145/2775053.2658771"))
+    "jovanovic2014yin"
+    "svenningsson2013combining"
+    "clements2001little"))
  '(or :bibtex :latex))
 

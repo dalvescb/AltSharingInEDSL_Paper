@@ -13,6 +13,7 @@
 \usepackage{listings}
 \usepackage{minted}
 \usepackage{hyperref}
+\usepackage{float}
 
 % Used for displaying a sample figure. If possible, figure files should
 % be included in EPS format.
@@ -178,7 +179,11 @@ instance Exp AST where
   constant x = AST $ Constant x
 \end{minted}
 
-Finally tagless style provides extensible, user friendly DSLs.
+Finally tagless style provides extensible, user friendly DSLs. By providing one
+interface for a variety of functionality, you can choose between shallow and
+deep embeddings (see \cite{jovanovic2014yin} and
+\cite{svenningsson2013combining}) and can easily extend the DSL without having
+to alter the original class definition.
 
 \subsection{Implicit Sharing via Hash-Consing}
 
@@ -368,7 +373,10 @@ lists into the DSL language. However doing this eliminates the advantage of
 having an embedded language. Manipulating tuple values will be cumbersome,
 constantly requiring calls to custom implementations of
 \mintinline{haskell}{fst}, \mintinline{haskell}{snd} etc. And for lists you'll
-lose access to built-in Haskell list functionality.
+lose access to built-in Haskell list functionality. To get the full advantage of
+embedding a DSL it should not only inherit the host language's syntactic and
+semantic structure, but also it's programming environment, as is argued in
+\cite{clements2001little}.
 
 \section{Implicit Sharing Via Byte String ASTs}
 
@@ -538,8 +546,10 @@ subTInsert (Just s) sAST nodeID =
 We need to make sure we don't attempt to insert the same substitution for two
 different ASTs. Unfortunately, if there is a collision there's no way to escape
 the state monad to prevent or modify the substitution. In the toy example,
-compilation crashes, but we could catch an exception instead. Either way it's up
-to the DSL writer to ensure they don't reuse the same label as a substitution.
+compilation crashes, but we could catch an exception instead if we used the
+\mintinline{haskell}{ExceptT} transformer instead of a simple state monad.
+Either way it's up to the DSL user to ensure they don't reuse the same label
+as a substitution.
 
 \section{BenchMarking}
 
@@ -610,13 +620,13 @@ We used this language to implement approximations of vector
 computes over an input and output array). The loop body was unrolled by a factor
 of four making for a sufficiently large resulting DAG.
 
-We profiled \mintinline{haskell}{cos} using both Kiselyov's method (i.e., hash-consing) and are own
-(i.e., trie-consing with some explicit sharing). It wasn't possible to use
-Kiselyov's explicit sharing method where meaningful so our code was able to
-achieve greater performance, with only a small increase in memory consumption
-(see Fig.~\ref{fig:hashvscons}).
+We profiled \mintinline{haskell}{cos} using both Kiselyov's method (i.e.,
+hash-consing) and are own (i.e., trie-consing with some explicit sharing). It
+wasn't possible to use Kiselyov's explicit sharing method where meaningful so
+our code was able to achieve greater performance, 154\% speedup, with only a
+small increase in memory consumption (see Fig.~\ref{fig:hashvscons}).
 
-\begin{figure}[!h]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.6\textwidth]{figs/cos_profile_hashcons_cropped.png}
   \includegraphics[width=0.6\textwidth]{figs/cos_profile_triecons_cropped.png}
@@ -638,7 +648,7 @@ redundant computation in \mintinline{haskell}{tan} is the reuse of computed valu
 sharing just those values we achieved the significant speedup shown in
 Fig.~\ref{fig:explicitvsno}.
 
-\begin{figure}[!h]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.6\textwidth]{figs/noexplicit_cropped.png}
   \hfill
