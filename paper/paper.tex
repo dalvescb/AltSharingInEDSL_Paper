@@ -107,7 +107,7 @@ present methods for implementing embedded DSLs with sharing that avoid  unsafe r
 means DSL functions are pure, type-safe and can return Haskell container types (i.e.,
 tuples, lists, etc.) without breaking sharing. All code will be hosted at \url{https://github.com/dalvescb/AltSharingInEDSL_Paper}
 
-\section{Background: Detecting Sharing}
+\section{Background: Detecting Sharing} \label{sec:background}
 
 Consider the naive DSL implemented as a Haskell data type:
 \begin{minted}{haskell}
@@ -188,10 +188,10 @@ to alter the original class definition.
 \subsection{Implicit Sharing via Hash-Consing}
 
 The goal of detecting sharing is to generate a graph structure (like the AST in
-the previous section) that share's common subexpressions. So we're essentially
-going to generate a Directed Acyclic Graph (DAG) instead of an AST. For example,
-we can use the following DAG structure that explicitly references nodes by a
-unique identifier
+Section \ref{sec:background}) but with sharing of common subexpressions. So
+we're going to generate a Directed Acyclic Graph (DAG) instead of an
+AST. For example, we can use the following DAG structure that explicitly
+references nodes by a unique identifier
 
 \begin{minted}{haskell}
 type NodeID = Int
@@ -335,15 +335,15 @@ This makes the code a bit clunky and adds an extra burden on the DSL writer, but
 it prevents unnecessary hash-consing in our example.
 
 However the method does not work for DSL functions returning multiple outputs
-via tuples or container types like lists. If we're attempting to generate a more
-specific graph structure like a hypergraph or bi-partite graph the need to do
-this becomes more aparent. For example, in our own research we implemented a DSL
-for an instruction set architecture that generates a bipartite graph of
-instructions and the registers they act upon. Attempting to generate a graph
-where an instruction outputs multiple registers will result in returning
-multiple independent state monads.
+via tuples or container types like lists. Generating a hypergraph or bipartite
+graph structure that allows operation nodes like \mintinline{haskell}{add} to
+have edges to multiple outputs is one way this problem will arise. For example,
+in our own research we implemented a DSL for an instruction set architecture
+that generates a bipartite graph of instructions and the registers they act
+upon. Attempting to generate a graph where an instruction outputs multiple
+values will result in returning multiple independent state monads.
 
-We can more concisely illustrate this problem by adding the following
+We can concisely illustrate this problem by adding the following
 instruction to our DSL that attempts to return two separate nodes in the DAG at
 once
 \begin{minted}{haskell}
@@ -401,10 +401,10 @@ data DAG = DAG { unTrie :: Trie (Node,NodeID)
                , maxID  :: NodeID
                } deriving Show
 \end{minted}
-This looks a bit different because the \mintinline{haskell}{BiMap}
-was a bijective relation between nodes and node ids,
-whereas the trie maps byte strings to pairs (node,node id).
-To get the DAG expressed as a relation, project out the values of the trie.
+This looks a bit different because the \mintinline{haskell}{BiMap} was a
+bijective relation between nodes and node ids, whereas the trie maps byte
+strings to pairs (node,node id). The DAG is expressed as a relation, by
+projecting out the values of the trie.
 
 To prevent confusion, we name the hash-consing function in our method \mintinline{haskell}{triecons}:
 \begin{minted}{haskell}
@@ -487,7 +487,8 @@ exampleSubT x y = let
 \end{minted}
 
 For safety purposes, we need to keep track of a table of these labels and their
-corresponding ASTs, to make sure we don't use the same label for different ASTs.
+corresponding ASTs, to make sure we don't use the same label for different
+serialized ASTs.
 \begin{minted}{haskell}
 data DAG = DAG { dagTrie :: Trie (Node,NodeID)
                , dagSubMap :: Map ByteString ByteString
@@ -503,7 +504,7 @@ When a substitution is made via \mintinline{haskell}{subT}, the
 \mintinline{haskell}{unStringAST} field is replaced with the new label, and the
 previous serialized AST is placed in \mintinline{haskell}{unSubT}. When a
 \mintinline{haskell}{Graph} value is processed, the \mintinline{haskell}{unSubT}
-field is checked for if it contains a label
+field is checked to see if it contains a label
 
 \begin{minted}{haskell}
 seqArgs :: [Graph a] -> State DAG [NodeID]
@@ -554,7 +555,7 @@ as a substitution.
 \section{BenchMarking}
 
 Even with explicit sharing via substitutions, our method contains a reasonable
-amount of overhead in order to overcome the shortcomings of Kiselyov's method.
+amount of overhead in order to overcome the limitations of Kiselyov's method.
 The \mintinline{haskell}{addChains} example altered for explicit sharing with
 both methods presents a worst case scenario in terms of overhead comparison.
 Kiselyov's method is able to fully utilize its explicit sharing and our method
@@ -583,8 +584,8 @@ performs better in this situation, however it should be noted our method is
 still viable for solving very large DAG's in reasonable amounts of time / memory.
 
 For more interesting benchmarks, we need to consider a more sophisticated DSL.
-We can define a DSL for an instruction set architecture like mentioned in
-section \ref{limitexplicit}. It will have the following interface
+We defined a DSL for an instruction set architecture as mentioned in
+section \ref{limitexplicit}. It will has the following interface
 
 \begin{minted}{haskell}
 class ISA repr where
@@ -617,12 +618,12 @@ add2 (a, b) =
 
 We used this language to implement approximations of vector
 \mintinline{haskell}{cos} and \mintinline{haskell}{tan} (i.e., a loop body that
-computes over an input and output array). The loop body was unrolled by a factor
-of four making for a sufficiently large resulting DAG.
+cos or tan over an input array). The loop body was unrolled by a factor
+of four resuling in a large DAG.
 
 We profiled \mintinline{haskell}{cos} using both Kiselyov's method (i.e.,
-hash-consing) and are own (i.e., trie-consing with some explicit sharing). It
-wasn't possible to use Kiselyov's explicit sharing method where meaningful so
+hash-consing) and our own (i.e., trie-consing with some explicit sharing). It
+wasn't possible to use Kiselyov's explicit sharing method in this case so
 our code was able to achieve greater performance, 154\% speedup, with only a
 small increase in memory consumption (see Fig.~\ref{fig:hashvscons}).
 
@@ -638,7 +639,7 @@ small increase in memory consumption (see Fig.~\ref{fig:hashvscons}).
 For \mintinline{haskell}{tan}, we were unable to generate a resulting code graph using Kiselyov's
 method. Using explicit sharing via let constructs wasn't possible due to the
 multiple outputs issue and without it the amount of computation due to redundant
-hash-consing was simply too large to perform in a reasonable amount of time.
+hash-consing was simply too large, and would not terminate.
 
 We were able to generate \mintinline{haskell}{tan} using our method both without and with our explicit
 sharing, however without explicit sharing we consumed an unreasonable amount of
