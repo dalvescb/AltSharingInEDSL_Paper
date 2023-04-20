@@ -2,8 +2,8 @@
 
 PAPER=paper.tex
 
-all:
-	latexmk -pdf --shell-escape $(PAPER)
+all: ## Compile paper
+		latexmk -pdf --shell-escape $(PAPER)
 
-clean:
-  latexmk -c
+clean: ## Clean output files
+		latexmk -c
